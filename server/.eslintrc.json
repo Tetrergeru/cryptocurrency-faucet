@@ -1,0 +1,11 @@
+{
+	"$schema": "https://json.schemastore.org/eslintrc",
+	"env": {
+		"es2021": true,
+		"node": true
+	},
+	"extends": ["eslint:recommended", "prettier"],
+	"rules": {
+		"no-unused-vars": "warn"
+	}
+}
