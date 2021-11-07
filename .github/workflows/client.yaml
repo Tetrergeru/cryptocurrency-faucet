@@ -69,4 +69,4 @@ jobs:
         with:
           context: ./${{ env.SERVICE }}/
           push: true
-          tags: ghcr.io/tetrergeru/cryptocurrency-faucet/${{ env.SERVICE }}:latest
+          tags: ghcr.io/${{ github.repository }}/${{ env.SERVICE }}:latest
