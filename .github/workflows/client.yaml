@@ -9,8 +9,11 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    working-directory: ./client
+    env:
+      DIR: ./client
     steps:
+    - name: cd to working directory
+      run: cd $DIR
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
@@ -21,8 +24,11 @@ jobs:
       run: yarn lint
   test:
     runs-on: ubuntu-latest
-    working-directory: ./client
+    env:
+      DIR: ./client
     steps:
+    - name: cd to working directory
+      run: cd $DIR
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
