@@ -19,7 +19,9 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: '14'
-    - name: lint
+    - name: Download dependencies
+      run: yarn
+    - name: Run lint
       run: yarn lint
   test:
     defaults:
@@ -33,7 +35,7 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: '14'
-    - name: download dependencies
+    - name: Download dependencies
       run: yarn
-    - name: test
+    - name: Run tests
       run: yarn test
