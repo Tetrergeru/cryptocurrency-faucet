@@ -8,11 +8,14 @@ on:
       - "*"
 env:
   SERVICE: client
+permissions:
+  packages: write
+  contents: read
 jobs:
   lint:
     defaults:
       run:
-        working-directory: ./${{ env.client }}
+        working-directory: ./${{ env.SERVICE }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -28,7 +31,7 @@ jobs:
   test:
     defaults:
       run:
-        working-directory: ./client
+        working-directory: ./${{ env.SERVICE }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -43,15 +46,12 @@ jobs:
       - name: Run tests
         run: yarn test
   docker:
-    permissions:
-      packages: write
-      contents: read
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
     defaults:
       run:
-        working-directory: ./client
+        working-directory: ./${{ env.SERVICE }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -68,6 +68,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
-          context: ./client/
+          context: ./${{ env.SERVICE }}/
           push: true
           tags: client:latest
