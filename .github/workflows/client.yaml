@@ -6,13 +6,11 @@ on:
       - test-ci
     tags:
       - "*"
-env:
-  SERVICE: client
 jobs:
   lint:
     defaults:
       run:
-        working-directory: ./$SERVICE
+        working-directory: ./client
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -28,7 +26,7 @@ jobs:
   test:
     defaults:
       run:
-        working-directory: ./$SERVICE
+        working-directory: ./client
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -48,7 +46,7 @@ jobs:
       IMAGE_NAME: ${{ github.repository }}
     defaults:
       run:
-        working-directory: ./$SERVICE
+        working-directory: ./client
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -67,5 +65,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: $SERVICE:latest
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: client:latest
