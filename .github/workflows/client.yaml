@@ -1,4 +1,6 @@
 name: "Client"
+env:
+  SERVICE: client
 on:
   push:
     branches:
@@ -6,8 +8,9 @@ on:
       - test-ci
     tags:
       - "*"
-env:
-  SERVICE: client
+    paths:
+      - "./${{ env.SERVICE }}/**"
+      - "./.github/workflows/${{ env.SERVICE }}.yaml"
 permissions:
   packages: write
   contents: read

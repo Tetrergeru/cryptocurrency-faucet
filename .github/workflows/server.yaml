@@ -1,0 +1,33 @@
+name: "Server"
+env:
+  SERVICE: client
+on:
+  push:
+    branches:
+      - main
+      - test-ci
+    tags:
+      - "*"
+    paths:
+      - "./${{ env.SERVICE }}/**"
+      - "./.github/workflows/${{ env.SERVICE }}.yaml"
+permissions:
+  packages: write
+  contents: read
+jobs:
+  lint:
+    defaults:
+      run:
+        working-directory: ./${{ env.SERVICE }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+      - name: Download dependencies
+        run: yarn
+      - name: Run lint
+        run: yarn lint
