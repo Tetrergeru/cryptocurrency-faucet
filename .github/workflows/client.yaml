@@ -69,5 +69,5 @@ jobs:
         with:
           context: ./${{ env.SERVICE }}/
           push: false
-          tags: ${{ env.SERVICE }}:latest
+          tags: ghcr.io/tetrergeru/cryptocurrency-faucet/${{ env.SERVICE }}:latest
       - run: docker images
