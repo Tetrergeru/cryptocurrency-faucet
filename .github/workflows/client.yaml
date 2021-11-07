@@ -5,37 +5,66 @@ on:
       - main
       - test-ci
     tags:
-    - '*'
+      - "*"
+env:
+  SERVICE: client
 jobs:
   lint:
     defaults:
       run:
-        working-directory: ./client
+        working-directory: ./$SERVICE
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - uses: actions/setup-node@v2
-      with:
-        node-version: '14'
-    - name: Download dependencies
-      run: yarn
-    - name: Run lint
-      run: yarn lint
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+      - name: Download dependencies
+        run: yarn
+      - name: Run lint
+        run: yarn lint
   test:
     defaults:
       run:
-        working-directory: ./client
+        working-directory: ./$SERVICE
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - uses: actions/setup-node@v2
-      with:
-        node-version: '14'
-    - name: Download dependencies
-      run: yarn
-    - name: Run tests
-      run: yarn test
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+      - name: Download dependencies
+        run: yarn
+      - name: Run tests
+        run: yarn test
+  docker:
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+    defaults:
+      run:
+        working-directory: ./$SERVICE
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: $SERVICE:latest
+          labels: ${{ steps.meta.outputs.labels }}
