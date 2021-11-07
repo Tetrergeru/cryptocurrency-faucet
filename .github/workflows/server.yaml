@@ -1,6 +1,6 @@
 name: "Server"
 env:
-  SERVICE: client
+  SERVICE: server
 on:
   push:
     branches:
@@ -9,8 +9,8 @@ on:
     tags:
       - "*"
     paths:
-      - "./${{ env.SERVICE }}/**"
-      - "./.github/workflows/${{ env.SERVICE }}.yaml"
+      - "server/**"
+      - ".github/workflows/server.yaml"
 permissions:
   packages: write
   contents: read

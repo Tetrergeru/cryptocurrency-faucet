@@ -9,8 +9,8 @@ on:
     tags:
       - "*"
     paths:
-      - "./${{ env.SERVICE }}/**"
-      - "./.github/workflows/${{ env.SERVICE }}.yaml"
+      - "client/**"
+      - ".github/workflows/client.yaml"
 permissions:
   packages: write
   contents: read
