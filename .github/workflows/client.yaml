@@ -1,0 +1,33 @@
+name: "Client"
+on:
+  push:
+    branches:
+      - main
+      - test-ci
+    tags:
+    - '*'
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - name: lint
+      run: yarn lint
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - name: download dependencies
+      run: yarn
+    - name: test
+      run: yarn test
