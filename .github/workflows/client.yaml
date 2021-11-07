@@ -6,11 +6,13 @@ on:
       - test-ci
     tags:
       - "*"
+env:
+  SERVICE: client
 jobs:
   lint:
     defaults:
       run:
-        working-directory: ./client
+        working-directory: ./${{ env.client }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -41,6 +43,9 @@ jobs:
       - name: Run tests
         run: yarn test
   docker:
+    permissions:
+      packages: write
+      contents: read
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
