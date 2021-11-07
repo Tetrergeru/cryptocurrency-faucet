@@ -9,6 +9,7 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    working-directory: ./client
     steps:
     - uses: actions/checkout@v2
       with:
@@ -20,6 +21,7 @@ jobs:
       run: yarn lint
   test:
     runs-on: ubuntu-latest
+    working-directory: ./client
     steps:
     - uses: actions/checkout@v2
       with:
