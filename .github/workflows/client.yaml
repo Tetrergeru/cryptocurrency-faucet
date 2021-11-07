@@ -12,11 +12,11 @@ jobs:
     env:
       DIR: ./client
     steps:
-    - name: cd to working directory
-      run: cd $DIR
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    - name: cd to working directory
+      run: cd $DIR
     - uses: actions/setup-node@v2
       with:
         node-version: '14'
@@ -27,11 +27,11 @@ jobs:
     env:
       DIR: ./client
     steps:
-    - name: cd to working directory
-      run: cd $DIR
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    - name: cd to working directory
+      run: cd $DIR
     - uses: actions/setup-node@v2
       with:
         node-version: '14'
