@@ -4,8 +4,14 @@ export interface Coin {
 	readonly icon: string;
 }
 
-export class EtheriumCoin implements Coin {
-	readonly title: string = 'Etherium';
+export class UndefiendCoin implements Coin {
+	readonly title: string = 'Undefiend';
+	readonly color: string = '#DEADBEEF';
+	readonly icon: string = '';
+}
+
+export class EthereumCoin implements Coin {
+	readonly title: string = 'Ethereum';
 	readonly color: string = '#FFC700';
 	readonly icon: string = 'Eth';
 }

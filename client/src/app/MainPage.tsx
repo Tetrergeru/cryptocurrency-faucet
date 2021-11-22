@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
 	HStack,
@@ -7,18 +7,22 @@ import {
 	Container,
 	Heading,
 	Button,
-	Twitter,
 	Plus,
 	Terra,
 	Text,
 	Eth,
 	Input,
+	Modal,
+	Error,
+	Loader,
+	Success,
 } from '@lidofinance/lido-ui';
 import User from './User';
-import { Coin, EtheriumCoin, TerraCoin } from './coins';
+import { Coin, EthereumCoin, TerraCoin, UndefiendCoin } from './coins';
+import { Limit, ServerApi, TransferRequest, Wallet } from './server';
 
-function Header(props: { user: User; coin?: Coin }) {
-	const { user, coin } = props;
+function Header(props: { user: User; wallet?: Wallet }) {
+	const { user, wallet } = props;
 	return (
 		<Container
 			as="header"
@@ -31,8 +35,8 @@ function Header(props: { user: User; coin?: Coin }) {
 		>
 			<HStack>
 				{' '}
-				{coin ? (
-					<Heading style={{ color: coin.color }}>{coin.title}</Heading>
+				{wallet ? (
+					<Heading style={{ color: '#FFC700' }}>{wallet.name}</Heading>
 				) : (
 					<Heading>Crypto</Heading>
 				)}
@@ -42,10 +46,15 @@ function Header(props: { user: User; coin?: Coin }) {
 	);
 }
 
-function CoinButton(props: { coin: Coin; onClick: (coin: Coin) => void }) {
+function CoinButton(props: {
+	coin: Coin;
+	onClick: (wallet: Wallet) => void;
+	limit: number;
+	wallet: Wallet;
+}) {
 	return (
-		<Block
-			onClick={() => props.onClick(props.coin)}
+		<Container
+			onClick={() => props.onClick(props.wallet)}
 			color="background"
 			style={{
 				width: '100%',
@@ -61,26 +70,126 @@ function CoinButton(props: { coin: Coin; onClick: (coin: Coin) => void }) {
 				) : props.coin.icon == 'Eth' ? (
 					<Eth />
 				) : undefined}
-				&nbsp;&nbsp;{props.coin.title}
+				&nbsp;&nbsp;{props.wallet.name}
 			</Heading>
-			<Text>{Math.random() * 10}</Text>
-		</Block>
+			<Text>
+				{props.limit} / {props.wallet.balance}{' '}
+			</Text>
+		</Container>
 	);
+}
+
+function MainForm(props: { onSubmit: (resuest: TransferRequest) => void }) {
+	const [targetWallet, setTargetWallet] = useState('');
+	const [moneyCount, setMoneyCount] = useState('');
+
+	return (
+		<>
+			<Input
+				placeholder="wallet"
+				type="text"
+				style={{
+					width: '100%',
+					margin: '10px',
+				}}
+				value={targetWallet}
+				onChange={ev => setTargetWallet(ev.target.value)}
+			/>
+			<Input
+				placeholder="36.41"
+				type="text"
+				style={{
+					width: '100%',
+					margin: '10px',
+				}}
+				value={moneyCount}
+				onChange={ev => setMoneyCount(ev.target.value)}
+			/>
+			<Button
+				style={{
+					width: '100%',
+					margin: '10px',
+				}}
+				onClick={() => {
+					props.onSubmit({ targetWallet, moneyCount: parseFloat(moneyCount) });
+				}}
+			>
+				Take
+			</Button>
+		</>
+	);
+}
+
+enum Status {
+	Default,
+	Pending,
+	Error,
+	Success,
 }
 
 export default class MainPage extends React.Component<
 	{ user: User },
-	{ coin?: Coin }
+	{
+		wallet?: Wallet;
+		message?: string;
+		wallets?: Wallet[];
+		limits?: Limit;
+		status: Status;
+	}
 > {
 	constructor(props: { user: User }) {
 		super(props);
-		this.state = {
-			coin: undefined,
-		};
+		this.state = { status: Status.Default };
 	}
 
-	setCoin(coin: Coin) {
-		this.setState({ coin: coin });
+	componentDidMount() {
+		this.getUpdate();
+	}
+
+	setError(error: string) {
+		this.setState({
+			message: error,
+			status: Status.Error,
+		});
+	}
+
+	setPending(msg?: string) {
+		this.setState({
+			message: msg || '',
+			status: Status.Pending,
+		});
+	}
+
+	setSuccess(msg?: string) {
+		this.setState({
+			message: msg || '',
+			status: Status.Success,
+		});
+	}
+
+	setDefault() {
+		this.setState({
+			message: undefined,
+			status: Status.Default,
+		});
+	}
+
+	getUpdate() {
+		ServerApi.getWallets()
+			.then(w => {
+				this.setState({ wallets: w });
+			})
+			.catch(e => this.setError(e));
+
+		ServerApi.getLimits()
+			.then(l => {
+				this.setState({ limits: l[0] });
+			})
+			.catch(e => this.setError(e));
+	}
+
+	setCoin(wallet: Wallet) {
+		this.setState({ wallet: wallet });
 	}
 
 	render() {
@@ -93,7 +202,40 @@ export default class MainPage extends React.Component<
 					height: '100%',
 				}}
 			>
-				<Header user={this.props.user} coin={this.state.coin} />
+				<Modal
+					open={this.state.status === Status.Error}
+					center
+					title="Something went wrong"
+					titleIcon={<Error color="red" height={64} width={64} />}
+				>
+					<Text>{this.state.message}</Text>
+					<Button color="secondary" onClick={() => this.setDefault()}>
+						OK
+					</Button>
+				</Modal>
+
+				<Modal
+					open={this.state.status === Status.Pending}
+					center
+					title="Loading..."
+					titleIcon={<Loader size="large" />}
+				>
+					<Text>{this.state.message}</Text>
+				</Modal>
+
+				<Modal
+					open={this.state.status === Status.Success}
+					center
+					title="Success"
+					titleIcon={<Success color="green" height={64} width={64} />}
+				>
+					<Text>{this.state.message}</Text>
+					<Button color="secondary" onClick={() => this.setDefault()}>
+						OK
+					</Button>
+				</Modal>
+
+				<Header user={this.props.user} wallet={this.state.wallet} />
 				<Container as="main" size="full">
 					<HStack
 						align="flex-start"
@@ -110,32 +252,22 @@ export default class MainPage extends React.Component<
 						</StackItem>
 
 						<StackItem basis="500px">
-							<Input
-								placeholder="wallet"
-								type="text"
-								style={{
-									width: '100%',
-									margin: '10px',
+							<MainForm
+								onSubmit={t => {
+									if (!this.state.wallet) {
+										this.setError('Wallet not set!');
+										return;
+									}
+									this.setPending();
+									ServerApi.postRequest(this.state.wallet.id, t)
+										.then(w => {
+											this.getUpdate();
+											this.setSuccess();
+										})
+										.catch(e => this.setError(JSON.parse(e).status));
 								}}
 							/>
-							<Input
-								placeholder="36.41"
-								type="text"
-								style={{
-									width: '100%',
-									margin: '10px',
-								}}
-							/>
-							<Button
-								style={{
-									width: '100%',
-									margin: '10px',
-								}}
-							>
-								Take
-							</Button>
 						</StackItem>
-
 						<StackItem
 							basis="300px"
 							style={{
@@ -143,17 +275,32 @@ export default class MainPage extends React.Component<
 								justifyContent: 'center',
 								flexDirection: 'column',
 								alignItems: 'center',
+								maxHeight: '80vh',
+								overflowY: 'auto',
+								overflowX: 'hidden',
 							}}
 						>
 							{/* <Heading size="sm" style={{ margin: "30px" }}>Coins</Heading> */}
-							<CoinButton
-								onClick={this.setCoin.bind(this)}
-								coin={new EtheriumCoin()}
-							></CoinButton>
-							<CoinButton
-								onClick={this.setCoin.bind(this)}
-								coin={new TerraCoin()}
-							></CoinButton>
+							{this.state.wallets
+								? this.state.wallets.map(w => {
+										const walet_map: Record<string, Coin | undefined> = {
+											ethereum: new EthereumCoin(),
+											terra: new TerraCoin(),
+										};
+										const coin: Coin = walet_map[w.type] || new UndefiendCoin();
+										return (
+											<CoinButton
+												key={w.id}
+												limit={
+													(this.state.limits && this.state.limits[w.id]) || 0
+												}
+												onClick={this.setCoin.bind(this)}
+												coin={coin}
+												wallet={w}
+											></CoinButton>
+										);
+								  })
+								: null}
 						</StackItem>
 					</HStack>
 				</Container>
