@@ -29,14 +29,12 @@ export default class EthereumWallet implements Wallet {
 	}
 
 	async move(addrTo: string, count: number): Promise<TransferReport> {
-		return Promise.reject(new Error('Method not implemented.'));
-		// TODO
-		// const val = web3.utils.toWei(count.toString(), 'ether') // кол-во эфира
-		// const trans = await web3.eth.accounts.signTransaction({ to: addr_to, value: val, gas: 2000000 }, pr_key); //создаем и подписываем транзакцию
-		// if (trans.rawTransaction === undefined) {
-		// throw new Error("Unexpected raw transaction")
-		// }
-		// const transaction = await web3.eth.sendSignedTransaction(trans.rawTransaction) // кидаем транзакцию
-		// Analize and research  result of transaction
+		const val = this.web3.utils.toWei(count.toString(), 'ether') // кол-во эфира
+		const trans = await this.web3.eth.accounts.signTransaction({ to: addrTo, value: val, gas: 2000000 }, this.privateKey); //создаем и подписываем транзакцию
+		if (trans.rawTransaction === undefined) {
+			throw new Error("Unexpected undefined raw transaction")
+		}
+		const transaction = await this.web3.eth.sendSignedTransaction(trans.rawTransaction) // кидаем транзакцию
+		return {message: `transaction status ${transaction.status} for transfer ${count} to ${addrTo}`}
 	}
 }

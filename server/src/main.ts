@@ -17,6 +17,7 @@ const defaultConfig = {
 			provider: '',
 			address: '',
 			privateKey: '',
+			limit: 0.001,
 		},
 	},
 	defaultLimits: 50,
@@ -80,7 +81,7 @@ function walletHasId(id: string, wallet: Wallet): boolean {
 
 const walletWithId = (id: string) => walletHasId.bind(undefined, id);
 
-const Limits = new LimitsManager(config.defaultLimits, Wallets);
+const Limits = new LimitsManager(config.defaultLimits, Wallets, {'Goerli': config.wallets.goerli.limit});
 const CurrentUser = 'anon-user';
 
 const walltesRouter = Router();

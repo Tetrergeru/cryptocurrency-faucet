@@ -11,8 +11,9 @@ function getOrPutDefault<K extends string | number, V>(
 
 export class LimitsManager {
 	constructor(
-		public readonly defaultLimit = 50,
-		private readonly wallets: Wallet[]
+		public readonly defaultLimit: number,
+		private readonly wallets: Wallet[],
+		public readonly defaultLimits: Record<string, number|undefined> = {}
 	) {}
 	private readonly limits = {} as Record<
 		string,
@@ -20,7 +21,7 @@ export class LimitsManager {
 	>;
 	take(user: string, wallet: string, count: number): number {
 		const userLimits = getOrPutDefault(this.limits, user, {});
-		const walletLimit = getOrPutDefault(userLimits, wallet, this.defaultLimit);
+		const walletLimit = getOrPutDefault(userLimits, wallet, this.defaultLimits[wallet]||this.defaultLimit);
 		const decrease = Math.min(walletLimit, count);
 		userLimits[wallet] = walletLimit - decrease;
 		return decrease;
@@ -28,7 +29,7 @@ export class LimitsManager {
 	limitsForUser(user: string) {
 		const userLimits = getOrPutDefault(this.limits, user, {});
 		this.wallets.forEach(({ name }) =>
-			getOrPutDefault(userLimits, name, this.defaultLimit)
+			getOrPutDefault(userLimits, name, this.defaultLimits[name]||this.defaultLimit)
 		);
 		return userLimits;
 	}
