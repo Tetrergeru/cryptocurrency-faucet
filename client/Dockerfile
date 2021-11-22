@@ -10,4 +10,5 @@ COPY --from=build-deps /usr/src/app/build /usr/share/nginx/html
 COPY ./nginx.conf /etc/nginx/
 
 EXPOSE 80
+#CMD ["cat", "/etc/nginx/nginx.conf"]
 CMD ["nginx", "-g", "daemon off;"]
