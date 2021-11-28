@@ -12,16 +12,17 @@ function getOrPutDefault<K extends string | number, V>(
 export class LimitsManager {
 	constructor(
 		public readonly defaultLimit: number,
-		private readonly wallets: Wallet[],
+		private readonly wallets: Wallet<string>[],
 		public readonly defaultLimits: Record<string, number|undefined> = {}
 	) {}
 	private readonly limits = {} as Record<
 		string,
 		Record<string, number | undefined> | undefined
 	>;
-	take(user: string, wallet: string, count: number): number {
+	take(user: string, wallet: string, count: string): number {
 		const userLimits = getOrPutDefault(this.limits, user, {});
 		const walletLimit = getOrPutDefault(userLimits, wallet, this.defaultLimits[wallet]||this.defaultLimit);
+		
 		const decrease = Math.min(walletLimit, count);
 		userLimits[wallet] = walletLimit - decrease;
 		return decrease;

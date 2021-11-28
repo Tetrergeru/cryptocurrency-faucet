@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import {
 	HStack,
 	StackItem,
 	Block,
 	Container,
+	Option,
 	Heading,
 	Button,
 	Plus,
@@ -15,11 +16,16 @@ import {
 	Modal,
 	Error,
 	Loader,
+	Select,
 	Success,
+	InputGroup,
+	Stack,
 } from '@lidofinance/lido-ui';
+import styled from 'styled-components';
 import User from './User';
 import { Coin, EthereumCoin, TerraCoin, UndefiendCoin } from './coins';
 import { Limit, ServerApi, TransferRequest, Wallet } from './server';
+import { withStyledSystem } from '@lidofinance/styled-system';
 
 function Header(props: { user: User; wallet?: Wallet }) {
 	const { user, wallet } = props;
@@ -46,6 +52,15 @@ function Header(props: { user: User; wallet?: Wallet }) {
 	);
 }
 
+const FaucetButtonContainer = styled(Container)`
+	cursor: pointer;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 28px;
+`
+
 function CoinButton(props: {
 	coin: Coin;
 	onClick: (wallet: Wallet) => void;
@@ -53,16 +68,8 @@ function CoinButton(props: {
 	wallet: Wallet;
 }) {
 	return (
-		<Container
+		<FaucetButtonContainer
 			onClick={() => props.onClick(props.wallet)}
-			color="background"
-			style={{
-				width: '100%',
-				margin: '30px',
-				display: 'flex',
-				flexDirection: 'column',
-				alignItems: 'center',
-			}}
 		>
 			<Heading size="sm">
 				{props.coin.icon == 'Terra' ? (
@@ -73,50 +80,61 @@ function CoinButton(props: {
 				&nbsp;&nbsp;{props.wallet.name}
 			</Heading>
 			<Text>
-				{props.limit} / {props.wallet.balance}{' '}
+				{props.limit} / {props.wallet.balance[props.wallet.units[0]]} {props.wallet.units[0]}
 			</Text>
-		</Container>
+		</FaucetButtonContainer>
 	);
 }
 
-function MainForm(props: { onSubmit: (resuest: TransferRequest) => void }) {
+const FormStyled = styled(Container)`
+	& > * {
+		margin-bottom: ${({ theme }) => theme.spaceMap.md}px;
+	}
+`
+
+function MainForm({units, onSubmit}: {
+	units: string[],
+	onSubmit: (resuest: TransferRequest) => void
+}) {
 	const [targetWallet, setTargetWallet] = useState('');
 	const [moneyCount, setMoneyCount] = useState('');
-
+	const [unitIndex, setUnitIndex] = useState(0);
+	if(units.length <= unitIndex)
+		setUnitIndex(0)
+	const inputGroupRef = useRef<HTMLSpanElement>(null);
 	return (
-		<>
+		<FormStyled>
 			<Input
+				fullwidth
 				placeholder="wallet"
 				type="text"
-				style={{
-					width: '100%',
-					margin: '10px',
-				}}
 				value={targetWallet}
 				onChange={ev => setTargetWallet(ev.target.value)}
 			/>
-			<Input
-				placeholder="36.41"
-				type="text"
-				style={{
-					width: '100%',
-					margin: '10px',
-				}}
-				value={moneyCount}
-				onChange={ev => setMoneyCount(ev.target.value)}
-			/>
+			<InputGroup ref={inputGroupRef}>
+				<Select anchorRef={inputGroupRef}
+					value={unitIndex}
+					onChange={ev => setUnitIndex(ev as number)}
+				>
+					{units.map((value, i) => <Option key={i} value={i}>{value}</Option>)}
+				</Select>
+				<Input
+					fullwidth
+					placeholder="36.41"
+					type="text"
+					value={moneyCount}
+					onChange={ev => setMoneyCount(ev.target.value)}
+				/>
+			</InputGroup>
 			<Button
-				style={{
-					width: '100%',
-					margin: '10px',
-				}}
+				fullwidth
 				onClick={() => {
-					props.onSubmit({ targetWallet, moneyCount: parseFloat(moneyCount) });
+					onSubmit({ targetWallet, moneyCount: parseFloat(moneyCount), unit: units[unitIndex] });
 				}}
 			>
 				Take
 			</Button>
-		</>
+		</FormStyled>
 	);
 }
 
@@ -252,7 +270,8 @@ export default class MainPage extends React.Component<
 						</StackItem>
 
 						<StackItem basis="500px">
-							<MainForm
+							{this.state.wallet ? <MainForm
+								units={this.state.wallet.units}
 								onSubmit={t => {
 									if (!this.state.wallet) {
 										this.setError('Wallet not set!');
@@ -266,7 +285,7 @@ export default class MainPage extends React.Component<
 										})
 										.catch(e => this.setError(JSON.parse(e).status));
 								}}
-							/>
+							/> : <Block>Choose a faucet from right panel</Block>}
 						</StackItem>
 						<StackItem
 							basis="300px"
@@ -283,23 +302,23 @@ export default class MainPage extends React.Component<
 							{/* <Heading size="sm" style={{ margin: "30px" }}>Coins</Heading> */}
 							{this.state.wallets
 								? this.state.wallets.map(w => {
-										const walet_map: Record<string, Coin | undefined> = {
-											ethereum: new EthereumCoin(),
-											terra: new TerraCoin(),
-										};
-										const coin: Coin = walet_map[w.type] || new UndefiendCoin();
-										return (
-											<CoinButton
-												key={w.id}
-												limit={
-													(this.state.limits && this.state.limits[w.id]) || 0
-												}
-												onClick={this.setCoin.bind(this)}
-												coin={coin}
-												wallet={w}
-											></CoinButton>
-										);
-								  })
+									const walet_map: Record<string, Coin | undefined> = {
+										ethereum: new EthereumCoin(),
+										terra: new TerraCoin(),
+									};
+									const coin: Coin = walet_map[w.type] || new UndefiendCoin();
+									return (
+										<CoinButton
+											key={w.id}
+											limit={
+												(this.state.limits && this.state.limits[w.id]) || 0
+											}
+											onClick={this.setCoin.bind(this)}
+											coin={coin}
+											wallet={w}
+										></CoinButton>
+									);
+								})
 								: null}
 						</StackItem>
 					</HStack>

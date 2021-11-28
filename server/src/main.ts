@@ -61,7 +61,7 @@ function readEnvConfig<T extends object>(prefix: string, defaultConfig: T): T {
 const config = readEnvConfig('APP', defaultConfig);
 console.log(config);
 
-const Wallets: Wallet[] = [
+const Wallets: Wallet<string>[] = [
 	new SimpleWallet('SimpleWallet', 500),
 	new BadWallet('BadWallet', 5000),
 	new SimpleWallet('Empty', 0),
@@ -75,7 +75,7 @@ try {
 	console.error(`Failed to create goerli wallet: ${err?.message || err}`);
 }
 
-function walletHasId(id: string, wallet: Wallet): boolean {
+function walletHasId(id: string, wallet: Wallet<string>): boolean {
 	return wallet.name === id;
 }
 
@@ -101,7 +101,8 @@ walltesRouter.get('/:walletId', (req, res) => {
 
 interface TransferRequest {
 	targetWallet: string;
-	moneyCount: number;
+	moneyCount: string;
+	unit: string;
 }
 walltesRouter.post('/:walletId/transfer', (req, res) => {
 	const r = <TransferRequest>req.body;
@@ -111,9 +112,12 @@ walltesRouter.post('/:walletId/transfer', (req, res) => {
 	if (sourceWallet === undefined) {
 		return res.sendStatus(404);
 	}
+	if(!sourceWallet.units.includes(r.unit)) {
+		return res.status(400).json({status: `Unsupported units for wallet. Expected: ${sourceWallet.units.join(", ")}`})
+	}
 	const limits = Limits.take(CurrentUser, fromId, r.moneyCount);
 	sourceWallet
-		.move(r.targetWallet, limits)
+		.move(r.targetWallet, limits, r.unit)
 		.then(res.json.bind(res))
 		.catch(err => {
 			console.error(err?.message || err);
@@ -132,6 +136,6 @@ app.use('/api/limits', limitsRouter);
 app.listen(config.api.port, () => {
 	console.log(`server is listening on ${config.api.port}`);
 });
-function WalletToJSONModel({ name, balance, net, type }: Wallet) {
-	return { name, balance, net, type, id: name };
+function WalletToJSONModel({ name, balance, net, type, units }: Wallet<string>) {
+	return { name, balance, net, type, id: name, units };
 }

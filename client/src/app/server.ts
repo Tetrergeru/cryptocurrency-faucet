@@ -6,12 +6,14 @@ export interface Wallet {
 	readonly net: string;
 	// Ethereum, Terra, etc
 	readonly type: string;
-	readonly balance: number;
+	readonly balance: Record<string, number>;
+	readonly units: string[];
 }
 
 export interface TransferRequest {
 	readonly targetWallet: string;
 	readonly moneyCount: number;
+	readonly unit: string;
 }
 
 export type Limit = Record<string, number>;
