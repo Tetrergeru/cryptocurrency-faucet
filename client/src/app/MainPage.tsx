@@ -19,13 +19,11 @@ import {
 	Select,
 	Success,
 	InputGroup,
-	Stack,
 } from '@lidofinance/lido-ui';
 import styled from 'styled-components';
 import User from './User';
 import { Coin, EthereumCoin, TerraCoin, UndefiendCoin } from './coins';
 import { Limit, ServerApi, TransferRequest, Wallet } from './server';
-import { withStyledSystem } from '@lidofinance/styled-system';
 
 function Header(props: { user: User; wallet?: Wallet }) {
 	const { user, wallet } = props;

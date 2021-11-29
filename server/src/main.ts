@@ -4,6 +4,8 @@ import './wallets/ethereum';
 import EthereumWallet from './wallets/ethereum';
 import { SimpleWallet, BadWallet, SlowlyWallet } from './wallets/local';
 import { Wallet } from './wallets/wallet';
+import './wallets/terra'
+import { Coin } from '@terra-money/terra.js';
 const app = express();
 app.use(express.json());
 
@@ -61,27 +63,30 @@ function readEnvConfig<T extends object>(prefix: string, defaultConfig: T): T {
 const config = readEnvConfig('APP', defaultConfig);
 console.log(config);
 
-const Wallets: Wallet<string>[] = [
-	new SimpleWallet('SimpleWallet', 500),
-	new BadWallet('BadWallet', 5000),
-	new SimpleWallet('Empty', 0),
-	new SlowlyWallet(new SimpleWallet('Sloy wallet', 500), 1500),
-	new SlowlyWallet(new BadWallet('Sloy bad wallet', 500), 1500),
+const Wallets: Wallet[] = [
+	new SimpleWallet('SimpleFaucet', 500),
+	new BadWallet('BadFaucet', 5000),
+	new SimpleWallet('EmptyFaucet', 0),
+	new SlowlyWallet(new SimpleWallet('Sloy faucet', 500), 1500),
+	new SlowlyWallet(new BadWallet('Sloy bad faucet', 500), 1500),
 ];
 
 try {
-	Wallets.push(new EthereumWallet('Goerli', config.wallets.goerli));
+	Wallets.unshift(new EthereumWallet('Goerli', config.wallets.goerli));
 } catch (err: any) {
 	console.error(`Failed to create goerli wallet: ${err?.message || err}`);
 }
 
-function walletHasId(id: string, wallet: Wallet<string>): boolean {
+function walletHasId(id: string, wallet: Wallet): boolean {
 	return wallet.name === id;
 }
 
 const walletWithId = (id: string) => walletHasId.bind(undefined, id);
 
-const Limits = new LimitsManager(config.defaultLimits, Wallets, {'Goerli': config.wallets.goerli.limit});
+const Limits = new LimitsManager(Wallets, {
+	...Object.fromEntries(Wallets.filter(w => w.type === "mock").map(w => [w.name, new Coin(w.denoms[0], config.defaultLimits)])),
+	'Goerli': new Coin("ether", config.wallets.goerli.limit)
+});
 const CurrentUser = 'anon-user';
 
 const walltesRouter = Router();
@@ -112,22 +117,22 @@ walltesRouter.post('/:walletId/transfer', (req, res) => {
 	if (sourceWallet === undefined) {
 		return res.sendStatus(404);
 	}
-	if(!sourceWallet.units.includes(r.unit)) {
-		return res.status(400).json({status: `Unsupported units for wallet. Expected: ${sourceWallet.units.join(", ")}`})
+	if (!sourceWallet.denoms.includes(r.unit)) {
+		return res.status(400).json({ status: `Unsupported units for wallet. Expected: ${sourceWallet.denoms.join(", ")}` })
 	}
 	const limits = Limits.take(CurrentUser, fromId, r.moneyCount);
-	sourceWallet
-		.move(r.targetWallet, limits, r.unit)
-		.then(res.json.bind(res))
-		.catch(err => {
-			console.error(err?.message || err);
-			res.status(412).json({ status: err.message });
-			Limits.take(CurrentUser, fromId, -limits);
-		});
+	// sourceWallet
+	// 	.move(r.targetWallet, limits, r.unit)
+	// 	.then(res.json.bind(res))
+	// 	.catch(err => {
+	// 		console.error(err?.message || err);
+	// 		res.status(412).json({ status: err.message });
+	// 		Limits.take(CurrentUser, fromId, -limits);
+	// 	});
 });
 
 limitsRouter.get('/', (req, res) => {
-	return res.json([Limits.limitsForUser(CurrentUser)]);
+	return res.json([Object.fromEntries(Object.entries(Limits.limitsForUser(CurrentUser)).map(([key, l])=>[key, l!.amount]))]); // TODO
 });
 
 app.use('/api/wallets', walltesRouter);
@@ -136,6 +141,6 @@ app.use('/api/limits', limitsRouter);
 app.listen(config.api.port, () => {
 	console.log(`server is listening on ${config.api.port}`);
 });
-function WalletToJSONModel({ name, balance, net, type, units }: Wallet<string>) {
-	return { name, balance, net, type, id: name, units };
+function WalletToJSONModel({ name, balance, net, type, denoms: units }: Wallet) {
+	return { name, balance: Object.fromEntries(balance.map(c => [c.denom, c.amount])), net, type, id: name, units };
 }
