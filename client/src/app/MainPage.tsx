@@ -57,18 +57,16 @@ const FaucetButtonContainer = styled(Container)`
 	flex-direction: column;
 	align-items: center;
 	padding: 28px;
-`
+`;
 
 function CoinButton(props: {
 	coin: Coin;
 	onClick: (wallet: Wallet) => void;
-	limit: number;
+	limit: string;
 	wallet: Wallet;
 }) {
 	return (
-		<FaucetButtonContainer
-			onClick={() => props.onClick(props.wallet)}
-		>
+		<FaucetButtonContainer onClick={() => props.onClick(props.wallet)}>
 			<Heading size="sm">
 				{props.coin.icon == 'Terra' ? (
 					<Terra />
@@ -78,7 +76,8 @@ function CoinButton(props: {
 				&nbsp;&nbsp;{props.wallet.name}
 			</Heading>
 			<Text>
-				{props.limit} / {props.wallet.balance[props.wallet.units[0]]} {props.wallet.units[0]}
+				{props.limit} / {props.wallet.balance[props.wallet.denoms[0]]}{' '}
+				{props.wallet.denoms[0]}
 			</Text>
 		</FaucetButtonContainer>
 	);
@@ -88,17 +87,19 @@ const FormStyled = styled(Container)`
 	& > * {
 		margin-bottom: ${({ theme }) => theme.spaceMap.md}px;
 	}
-`
+`;
 
-function MainForm({units, onSubmit}: {
-	units: string[],
-	onSubmit: (resuest: TransferRequest) => void
+function MainForm({
+	units,
+	onSubmit,
+}: {
+	units: string[];
+	onSubmit: (resuest: TransferRequest) => void;
 }) {
 	const [targetWallet, setTargetWallet] = useState('');
 	const [moneyCount, setMoneyCount] = useState('');
 	const [unitIndex, setUnitIndex] = useState(0);
-	if(units.length <= unitIndex)
-		setUnitIndex(0)
+	if (units.length <= unitIndex) setUnitIndex(0);
 	const inputGroupRef = useRef<HTMLSpanElement>(null);
 	return (
 		<FormStyled>
@@ -110,11 +111,16 @@ function MainForm({units, onSubmit}: {
 				onChange={ev => setTargetWallet(ev.target.value)}
 			/>
 			<InputGroup ref={inputGroupRef}>
-				<Select anchorRef={inputGroupRef}
+				<Select
+					anchorRef={inputGroupRef}
 					value={unitIndex}
 					onChange={ev => setUnitIndex(ev as number)}
 				>
-					{units.map((value, i) => <Option key={i} value={i}>{value}</Option>)}
+					{units.map((value, i) => (
+						<Option key={i} value={i}>
+							{value}
+						</Option>
+					))}
 				</Select>
 				<Input
 					fullwidth
@@ -127,7 +133,11 @@ function MainForm({units, onSubmit}: {
 			<Button
 				fullwidth
 				onClick={() => {
-					onSubmit({ targetWallet, moneyCount: parseFloat(moneyCount), unit: units[unitIndex] });
+					onSubmit({
+						targetWallet,
+						moneyCount: parseFloat(moneyCount),
+						denom: units[unitIndex],
+					});
 				}}
 			>
 				Take
@@ -268,22 +278,26 @@ export default class MainPage extends React.Component<
 						</StackItem>
 
 						<StackItem basis="500px">
-							{this.state.wallet ? <MainForm
-								units={this.state.wallet.units}
-								onSubmit={t => {
-									if (!this.state.wallet) {
-										this.setError('Wallet not set!');
-										return;
-									}
-									this.setPending();
-									ServerApi.postRequest(this.state.wallet.id, t)
-										.then(w => {
-											this.getUpdate();
-											this.setSuccess();
-										})
-										.catch(e => this.setError(JSON.parse(e).status));
-								}}
-							/> : <Block>Choose a faucet from right panel</Block>}
+							{this.state.wallet ? (
+								<MainForm
+									units={this.state.wallet.denoms}
+									onSubmit={t => {
+										if (!this.state.wallet) {
+											this.setError('Wallet not set!');
+											return;
+										}
+										this.setPending();
+										ServerApi.postRequest(this.state.wallet.id, t)
+											.then(w => {
+												this.getUpdate();
+												this.setSuccess();
+											})
+											.catch(e => this.setError(JSON.parse(e).status));
+									}}
+								/>
+							) : (
+								<Block>Choose a faucet from right panel</Block>
+							)}
 						</StackItem>
 						<StackItem
 							basis="300px"
@@ -300,23 +314,25 @@ export default class MainPage extends React.Component<
 							{/* <Heading size="sm" style={{ margin: "30px" }}>Coins</Heading> */}
 							{this.state.wallets
 								? this.state.wallets.map(w => {
-									const walet_map: Record<string, Coin | undefined> = {
-										ethereum: new EthereumCoin(),
-										terra: new TerraCoin(),
-									};
-									const coin: Coin = walet_map[w.type] || new UndefiendCoin();
-									return (
-										<CoinButton
-											key={w.id}
-											limit={
-												(this.state.limits && this.state.limits[w.id]) || 0
-											}
-											onClick={this.setCoin.bind(this)}
-											coin={coin}
-											wallet={w}
-										></CoinButton>
-									);
-								})
+										const walet_map: Record<string, Coin | undefined> = {
+											ethereum: new EthereumCoin(),
+											terra: new TerraCoin(),
+										};
+										const coin: Coin = walet_map[w.type] || new UndefiendCoin();
+										return (
+											<CoinButton
+												key={w.id}
+												limit={
+													(this.state.limits &&
+														this.state.limits[w.id][w.denoms[0]]) ||
+													'-'
+												}
+												onClick={this.setCoin.bind(this)}
+												coin={coin}
+												wallet={w}
+											></CoinButton>
+										);
+								  })
 								: null}
 						</StackItem>
 					</HStack>

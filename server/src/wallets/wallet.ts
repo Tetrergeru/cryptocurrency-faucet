@@ -1,4 +1,4 @@
-import { Coin, Coins, Denom } from "@terra-money/terra.js";
+import { Coin, Coins, Denom } from '@terra-money/terra.js';
 
 export interface Wallet {
 	// Wallet name
@@ -8,8 +8,10 @@ export interface Wallet {
 	// Ethereum, Terra, etc
 	readonly type: string;
 	readonly balance: Coins;
+	// Supported denoms
 	readonly denoms: ReadonlyArray<Denom>;
 	move(to: string, coin: Coin): Promise<TransferReport>;
+	utils: WalletUtils;
 }
 
 export interface WalletUtils {

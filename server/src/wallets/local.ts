@@ -10,13 +10,18 @@ abstract class InMemoryWallet implements Wallet {
 	readonly type = 'mock';
 	protected chips: Dec;
 	get balance() {
-		return new Coins([new Coin("chips", this.chips)])
+		return new Coins([new Coin('chips', this.chips)]);
 	}
 	constructor(public readonly name: string, balance = 100) {
 		this.chips = new Dec(balance);
 	}
 	readonly denoms = ['chips'] as const;
 	abstract move(to: string, coin: Coin): Promise<TransferReport>;
+	utils = {
+		convert(coin: Coin, targetDemon: string) {
+			return coin;
+		},
+	};
 }
 
 export class SimpleWallet extends InMemoryWallet {
@@ -30,7 +35,7 @@ export class SimpleWallet extends InMemoryWallet {
 }
 
 export class SlowlyWallet implements Wallet {
-	constructor(private readonly origin: Wallet, readonly delay: number) { }
+	constructor(private readonly origin: Wallet, readonly delay: number) {}
 	get denoms() {
 		return this.origin.denoms;
 	}
@@ -47,9 +52,10 @@ export class SlowlyWallet implements Wallet {
 		return this.origin.balance;
 	}
 	move(to: string, coin: Coin): Promise<TransferReport> {
-		return timer(this.delay).then(
-			this.origin.move.bind(this.origin, to, coin)
-		);
+		return timer(this.delay).then(this.origin.move.bind(this.origin, to, coin));
+	}
+	get utils() {
+		return this.origin.utils;
 	}
 }
 

@@ -6,8 +6,7 @@ function getOrPutDefault<K extends string | number, V>(
 	key: K,
 	defaultValue: NonNullable<V>
 ): NonNullable<V> {
-	if (from[key] === undefined) 
-		return from[key] = defaultValue;
+	if (from[key] === undefined) return (from[key] = defaultValue);
 	return from[key]!;
 }
 
@@ -20,14 +19,19 @@ export class LimitsManager {
 		string,
 		Record<string, Coin | undefined> | undefined
 	>;
-	take(user: string, wallet: string, count: string): number {
+	take(user: string, walletId: string, wanted: Coin): Coin {
 		const userLimits = getOrPutDefault(this.limits, user, {});
-		const walletLimit = getOrPutDefault(userLimits, wallet, this.defaultLimits[wallet]);
-
-		// const decrease = Math.min(walletLimit, count);
-		// userLimits[wallet] = walletLimit - decrease;
-		// return decrease;
-		return 0
+		const walletLimit = getOrPutDefault(
+			userLimits,
+			walletId,
+			this.defaultLimits[walletId]
+		);
+		const wallet = this.wallets.find(w => w.name === walletId)!;
+		const decrease = wallet.utils.convert(wanted, walletLimit.denom);
+		if (decrease.amount.greaterThan(walletLimit.amount))
+			throw new Error(`Limit overflow`);
+		userLimits[walletId] = walletLimit.sub(decrease);
+		return decrease;
 	}
 	limitsForUser(user: string) {
 		const userLimits = getOrPutDefault(this.limits, user, {});

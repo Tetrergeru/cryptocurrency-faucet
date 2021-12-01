@@ -6,17 +6,18 @@ export interface Wallet {
 	readonly net: string;
 	// Ethereum, Terra, etc
 	readonly type: string;
-	readonly balance: Record<string, number>;
-	readonly units: string[];
+	readonly balance: Record<string, string>;
+	readonly denoms: string[];
 }
 
 export interface TransferRequest {
 	readonly targetWallet: string;
 	readonly moneyCount: number;
-	readonly unit: string;
+	readonly denom: string;
 }
 
-export type Limit = Record<string, number>;
+// Map[walletId][denom]limitValue
+export type Limit = Record<string, Record<string, string>>;
 
 export class ServerApi {
 	static postRequest(id: string, req: TransferRequest): Promise<string> {

@@ -9,7 +9,6 @@ export interface EthereumSettings {
 	privateKey: string;
 }
 
-
 function convert(value: string, from: Unit, to: Unit): string {
 	return Web3.utils.fromWei(Web3.utils.toWei(value, from), to);
 }
@@ -17,7 +16,7 @@ function convert(value: string, from: Unit, to: Unit): string {
 export default class EthereumWallet implements Wallet {
 	readonly net = 'goerly';
 	readonly type = 'ethereum';
-	denoms: Unit[] = ["ether", "kwei"];
+	denoms: Unit[] = ['ether', 'kwei'];
 	balance = new Coins(this.denoms.map(unit => new Coin(unit, 0)));
 	private readonly web3: Web3;
 	private readonly privateKey: string;
@@ -33,18 +32,37 @@ export default class EthereumWallet implements Wallet {
 		this.web3.eth
 			.getBalance(address)
 			.then(wei => {
-				this.balance = new Coins(this.denoms.map(unit => new Coin(unit, Web3.utils.fromWei(wei, unit))));
+				this.balance = new Coins(
+					this.denoms.map(unit => new Coin(unit, Web3.utils.fromWei(wei, unit)))
+				);
 			})
 			.catch(console.error);
 	}
 
 	async move(addrTo: string, coin: Coin): Promise<TransferReport> {
-		const val = Web3.utils.toWei(coin.amount.toString(), coin.denom as Unit)
-		const trans = await this.web3.eth.accounts.signTransaction({ to: addrTo, value: val, gas: 2000000 }, this.privateKey);
+		const val = Web3.utils.toWei(coin.amount.toString(), coin.denom as Unit);
+		const trans = await this.web3.eth.accounts.signTransaction(
+			{ to: addrTo, value: val, gas: 2000000 },
+			this.privateKey
+		);
 		if (trans.rawTransaction === undefined) {
-			throw new Error("Unexpected undefined raw transaction")
+			throw new Error('Unexpected undefined raw transaction');
 		}
-		const transaction = await this.web3.eth.sendSignedTransaction(trans.rawTransaction)
-		return { message: `transaction status ${transaction.status} for transfer ${coin} to ${addrTo}` }
+		const transaction = await this.web3.eth.sendSignedTransaction(
+			trans.rawTransaction
+		);
+		return {
+			message: `transaction status ${transaction.status} for transfer ${coin} to ${addrTo}`,
+		};
 	}
+
+	utils = {
+		convert(coin: Coin, targetDemon: string) {
+			if (targetDemon == coin.denom) return coin;
+			return new Coin(
+				targetDemon,
+				convert(coin.amount.toString(), coin.denom as Unit, targetDemon as Unit)
+			);
+		},
+	};
 }
