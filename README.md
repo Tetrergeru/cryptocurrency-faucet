@@ -2,6 +2,4 @@
 
 Error messages are displayed on the console, I don't know how right
 
-Data about faucet wallet are stored inside function (In my opinion, should be outside)
-
-When i will fix errors with ts, i gonna rewrite from js to ts
+Txt file have data(name for terra station, name for sending, mnemonic phrase, password). Each wallet have some coins(luna and usd)
