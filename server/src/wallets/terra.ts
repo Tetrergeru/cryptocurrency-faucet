@@ -1,36 +1,121 @@
-import { LCDClient, MnemonicKey, MsgSend } from '@terra-money/terra.js';
+import {
+	Coin,
+	Coins,
+	Dec,
+	LCDClient,
+	MnemonicKey,
+	MsgSend,
+	MsgSwap,
+	Numeric,
+	RawKey,
+	Wallet,
+} from '@terra-money/terra.js';
+import { Faucet, TransferReport, WalletUtils } from './wallet';
 
-async function terra_faucet(
-	to_wallet: string,
-	token_type: string,
+export interface TerraFaucetSettings {
+	gasType?: string;
+	gasAmount?: Numeric.Input;
+	mnemonicKey?: string;
+	privateKey?: string;
+}
+
+const uMultiplyer = 1000000;
+export default class TerraFaucet implements Faucet {
+	readonly net = 'bombay-12';
+	readonly type = 'terra';
+	balance: Coins = new Coins([new Coin('luna', 0)]);
+	denoms: readonly string[] = ['luna']; // , "usd"]; needs confriming
+
+	private readonly terra: LCDClient;
+	private readonly wallet: Wallet;
+	constructor(readonly name: string, settings: TerraFaucetSettings = {}) {
+		const {
+			gasType = 'luna',
+			gasAmount = '0.0001',
+			mnemonicKey,
+			privateKey,
+		} = settings;
+		const gasPrices = new Coins([
+			new Coin(`u${gasType}`, new Dec(uMultiplyer).mul(gasAmount)),
+		]);
+		this.terra = new LCDClient({
+			// TODO: move to config?
+			URL: 'https://bombay-lcd.terra.dev/',
+			chainID: this.net,
+			gasPrices,
+		});
+		if (privateKey == undefined && mnemonicKey == undefined) {
+			throw new Error(
+				`can't initialize terra faucet: not found private or mnemonic key`
+			);
+		}
+		this.wallet = this.terra.wallet(
+			privateKey
+				? new RawKey(Buffer.from(privateKey, 'utf-8'))
+				: new MnemonicKey({ mnemonic: mnemonicKey })
+		);
+
+		this.terra.bank
+			.balance(this.wallet.key.accAddress)
+			.then(
+				([coins]) =>
+					(this.balance = new Coins(
+						coins.map(
+							c => new Coin(c.denom.substr(1), c.amount.div(uMultiplyer))
+						)
+					))
+			)
+			.catch(console.error);
+	}
+
+	async move(toWallet: string, coin: Coin): Promise<TransferReport> {
+		const sendingCoins = new Coins([
+			new Coin(`u${coin.denom}`, coin.amount.mul(uMultiplyer)),
+		]);
+
+		const my_tx = new MsgSend(
+			this.wallet.key.accAddress,
+			toWallet,
+			sendingCoins
+		);
+
+		try {
+			const tx = await this.wallet.createAndSignTx({ msgs: [my_tx] });
+			const res = await this.terra.tx.broadcast(tx);
+			console.debug(res);
+			return { message: `Succesfully transfered: ${res.info}` };
+		} catch (err: any) {
+			if (err.response) {
+				console.error(err.response.data);
+				throw new Error(err.response.data);
+			}
+			console.error(err.message);
+			throw err;
+		}
+	}
+
+	utils: WalletUtils = {
+		convert(coin: Coin, targetDemon: string) {
+			throw new Error(
+				`can't convert ${coin} to ${targetDemon}: not implemented`
+			);
+		},
+	};
+}
+
+// maybe usefull in future
+async function swapTokens(
+	terraClient: LCDClient,
+	wallet: Wallet,
+	fromTokens: string,
+	toTokens: string,
 	amount: number
 ) {
-	const terra = new LCDClient({
-		URL: 'https://bombay-lcd.terra.dev/',
-		chainID: 'bombay-12',
-	});
-
-	// Granter (terra1maqmnzxcxg4vee7qggjgpwwj2ej45xg30zrsvd)
-	const faucet_wallet = terra.wallet(
-		new MnemonicKey({
-			mnemonic:
-				'practice enhance suffer vital enforce deposit install car deer trade tent bid brave size ride play valid throw image copy panther brick rhythm west',
-		})
-	);
-
-	const my_tx = new MsgSend(
-		faucet_wallet.key.accAddress,
-		to_wallet,
-		// (1000000 * amount).toString() + 'u' + token_type
-		{ uusd: 1000000 * amount }
-	);
-
-	await faucet_wallet
-		.createAndSignTx({
-			msgs: [my_tx],
-			memo: 'test sending',
-		})
-		.then(tx => terra.tx.broadcast(tx))
+	const swapCoin = new Coin('u' + fromTokens, new Dec(1000000).mul(amount));
+	const swap = new MsgSwap(wallet.key.accAddress, swapCoin, 'u' + toTokens);
+	await wallet
+		.createAndSignTx({ msgs: [swap] })
+		.then(tx => terraClient.tx.broadcast(tx))
 		.then(console.info)
 		.catch(err => {
 			if (err.response) {
@@ -40,42 +125,3 @@ async function terra_faucet(
 			}
 		});
 }
-
-// terra_faucet("terra1axmdadm204mcyh4vqstgjl59us9tc3cah78s3j",'usd', 100).catch(console.error);
-const terra = new LCDClient({
-	URL: 'https://bombay-lcd.terra.dev/',
-	chainID: 'bombay-12',
-});
-const faucet_wallet = terra.wallet(
-	new MnemonicKey({
-		mnemonic:
-			'practice enhance suffer vital enforce deposit install car deer trade tent bid brave size ride play valid throw image copy panther brick rhythm west',
-	})
-);
-
-console.log(faucet_wallet.key.accAddress);
-terra.bank
-	.balance(faucet_wallet.key.accAddress)
-	.then(([coints]) => console.log(coints.map(c => c)));
-terra.bank.total().then(([coins]) => console.error(coins.map(c => c)));
-terra.oracle.exchangeRates().then(firstCourse => {
-	let prevCourse = firstCourse;
-	let count = 1;
-	console.debug(firstCourse);
-	setInterval(() => {
-		terra.oracle.exchangeRates().then(newCourse => {
-			console.log(
-				newCourse.map(newCoin => [
-					newCoin.denom,
-					newCoin.amount,
-					newCoin.sub(prevCourse.get(newCoin.denom)!.amount).amount,
-					newCoin.sub(firstCourse.get(newCoin.denom)!.amount).amount,
-					newCoin.sub(firstCourse.get(newCoin.denom)!.amount).amount.div(count),
-				])
-			);
-			prevCourse = newCourse;
-			count++;
-		});
-	}, 30000);
-});
-terra.oracle.activeDenoms().then(console.debug);

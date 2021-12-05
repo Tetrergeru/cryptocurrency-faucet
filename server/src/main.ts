@@ -1,10 +1,10 @@
 import express, { Router } from 'express';
 import { LimitsManager } from './limitsmanager';
-import './wallets/ethereum';
 import EthereumWallet from './wallets/ethereum';
 import { SimpleWallet, BadWallet, SlowlyWallet } from './wallets/local';
-import { Wallet } from './wallets/wallet';
-import { Coin } from '@terra-money/terra.js';
+import { Faucet } from './wallets/wallet';
+import { Coin, Numeric } from '@terra-money/terra.js';
+import TerraFaucet, { TerraFaucetSettings } from './wallets/terra';
 const app = express();
 app.use(express.json());
 
@@ -20,6 +20,11 @@ const defaultConfig = {
 			privateKey: '',
 			limit: 0.001,
 		},
+		bombay: {
+			limit: 1,
+			mnemonicKey: '',
+			privateKey: '',
+		} as TerraFaucetSettings & { limit: Numeric.Input },
 	},
 	defaultLimits: 50,
 };
@@ -62,7 +67,7 @@ function readEnvConfig<T extends object>(prefix: string, defaultConfig: T): T {
 const config = readEnvConfig('APP', defaultConfig);
 console.log(config);
 
-const Wallets: Wallet[] = [
+const Wallets: Faucet[] = [
 	new SimpleWallet('SimpleFaucet', 500),
 	new BadWallet('BadFaucet', 5000),
 	new SimpleWallet('EmptyFaucet', 0),
@@ -71,12 +76,18 @@ const Wallets: Wallet[] = [
 ];
 
 try {
+	Wallets.unshift(new TerraFaucet('Bombay-12', config.wallets.bombay));
+} catch (err: any) {
+	console.error(`Failed to create bombay wallet: ${err?.message || err}`);
+}
+
+try {
 	Wallets.unshift(new EthereumWallet('Goerli', config.wallets.goerli));
 } catch (err: any) {
 	console.error(`Failed to create goerli wallet: ${err?.message || err}`);
 }
 
-function walletHasId(id: string, wallet: Wallet): boolean {
+function walletHasId(id: string, wallet: Faucet): boolean {
 	return wallet.name === id;
 }
 
@@ -90,7 +101,9 @@ const Limits = new LimitsManager(Wallets, {
 		])
 	),
 	Goerli: new Coin('ether', config.wallets.goerli.limit),
+	'Bombay-12': new Coin('luna', config.wallets.bombay.limit),
 });
+
 const CurrentUser = 'anon-user';
 
 const walltesRouter = Router();
@@ -122,13 +135,11 @@ walltesRouter.post('/:walletId/transfer', (req, res) => {
 		return res.sendStatus(404);
 	}
 	if (!sourceWallet.denoms.includes(r.denom)) {
-		return res
-			.status(400)
-			.json({
-				status: `Unsupported units for wallet. Expected: ${sourceWallet.denoms.join(
-					', '
-				)}`,
-			});
+		return res.status(400).json({
+			status: `Unsupported units for wallet. Expected: ${sourceWallet.denoms.join(
+				', '
+			)}`,
+		});
 	}
 	const coin = new Coin(r.denom, r.moneyCount);
 	try {
@@ -160,7 +171,9 @@ limitsRouter.get('/', (req, res) => {
 					Object.fromEntries(
 						wallet.denoms.map(denom => [
 							denom,
-							wallet.utils.convert(coin!, denom).amount,
+							denom === coin?.denom
+								? coin.amount
+								: wallet.utils.convert(coin!, denom).amount,
 						])
 					),
 				];
@@ -175,7 +188,7 @@ app.use('/api/limits', limitsRouter);
 app.listen(config.api.port, () => {
 	console.log(`server is listening on ${config.api.port}`);
 });
-function WalletToJSONModel({ name, balance, net, type, denoms }: Wallet) {
+function WalletToJSONModel({ name, balance, net, type, denoms }: Faucet) {
 	return {
 		name,
 		balance: Object.fromEntries(balance.map(c => [c.denom, c.amount])),
