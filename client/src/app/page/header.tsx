@@ -34,11 +34,13 @@ function Username() {
 	return (
 		<HStack align="center" justify="center">
 			<StackItem>
-				<SignOutText
-					size="md"
-					style={{ padding: '10px' }}>
-					Sign out
-				</SignOutText>
+				<a href="/api/auth/logout">
+					<SignOutText
+						size="md"
+						style={{ padding: '10px' }}>
+						Sign out
+					</SignOutText>
+				</a>
 			</StackItem>
 			<StackItem>
 				{ user.status.status === Status.Success ?

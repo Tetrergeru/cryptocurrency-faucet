@@ -48,13 +48,12 @@ function FormItem(props: ElementWithChildren) {
 }
 
 const NetworkTileBlock = styled(Block)`
-	height: 102px;
-	width: 102px;
+	height: 100px;
+	width: 100px;
+	border-width: 1px;
+	border-style: solid;
+	border-color: #00000000;
 	&:hover {
-		height: 100px;
-		width: 100px;
-		border-width: 1px;
-		border-style: solid;
 		border-color: #009df5;
 	}
 `;
