@@ -12,7 +12,7 @@ export interface Wallet {
 
 export interface TransferRequest {
 	readonly targetWallet: string;
-	readonly moneyCount: number;
+	readonly moneyCount: string;
 	readonly denom: string;
 }
 

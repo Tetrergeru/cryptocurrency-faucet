@@ -1,8 +1,13 @@
 import React from 'react';
-import { ThemeProvider, themeDark, Container } from '@lidofinance/lido-ui';
-import MainPage from './MainPage';
+import {
+	ThemeProvider,
+	themeLight,
+	themeDark,
+	Container,
+} from '@lidofinance/lido-ui';
 import SignIn from './SignIn';
 import User from './User';
+import Page from './page/page';
 
 export default class App extends React.Component<
 	Record<string, never>,
@@ -19,7 +24,7 @@ export default class App extends React.Component<
 		return (
 			<ThemeProvider theme={themeDark}>
 				{this.state.user ? (
-					<MainPage user={this.state.user} />
+					<Page user={this.state.user} />
 				) : (
 					<SignIn setUser={user => this.setState({ user: user })} />
 				)}
