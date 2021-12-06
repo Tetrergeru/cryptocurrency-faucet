@@ -87,8 +87,8 @@ const CurrentUser = 'anon-user';
 const walltesRouter = Router();
 const limitsRouter = Router();
 
-res.json(Wallets.map(WalletToJSONModel));
 walltesRouter.get('/', (req, res) => {
+	res.json(Wallets.map(WalletToJSONModel));
 });
 
 walltesRouter.get('/:walletId', (req, res) => {
