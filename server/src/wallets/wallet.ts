@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Coin, Coins, Denom } from '@terra-money/terra.js';
 
 export interface Faucet {
