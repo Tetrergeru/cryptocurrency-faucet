@@ -1,14 +1,12 @@
-FROM node:14.18.1-alpine as build-deps
-WORKDIR /usr/src/app
-COPY ./package.json ./yarn.lock  ./
+FROM node:12-slim as react-build
+WORKDIR /app
+COPY package.json ./
+COPY yarn.lock ./
 RUN yarn
 COPY . ./
 RUN yarn build
 
-FROM nginx:1.21.3-alpine
-COPY --from=build-deps /usr/src/app/build /usr/share/nginx/html
-COPY ./nginx.conf /etc/nginx/
-
-EXPOSE 80
-#CMD ["cat", "/etc/nginx/nginx.conf"]
-CMD ["nginx", "-g", "daemon off;"]
+FROM nginxinc/nginx-unprivileged:1.19-alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=react-build /app/build /app
+EXPOSE 8080
