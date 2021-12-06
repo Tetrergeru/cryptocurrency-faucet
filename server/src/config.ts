@@ -14,7 +14,7 @@ const defaultConfig = {
 			provider: '',
 			address: '',
 			privateKey: '',
-			limit: 0.001,
+			limit: "0.001",
 		},
 		bombay: {
 			limit: 1,

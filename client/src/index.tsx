@@ -4,10 +4,13 @@ import './index.css';
 import App from './app/App';
 import reportWebVitals from './helpers/reportWebVitals';
 import AppBackendDebug from './AppBackendDebug';
+import { GlobalProvider } from './app/globalContext';
 
 ReactDOM.render(
 	<React.StrictMode>
-		<App />
+		<GlobalProvider>
+			<App />
+		</GlobalProvider>
 	</React.StrictMode>,
 	document.getElementById('root')
 );

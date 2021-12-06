@@ -16,6 +16,7 @@ import {
 import { stat } from 'fs';
 import React, { useContext } from 'react';
 import styled from 'styled-components';
+import { useGlobalContext } from '../globalContext';
 import { ServerApi, TransferRequest } from '../server';
 import { FormProvider, useFormContext } from './formContext';
 import { useServerApi } from './serverContext';
@@ -23,9 +24,9 @@ import { Status, StatusIcon } from './statusMessage';
 
 interface ElementWithChildren {
 	children:
-		| (JSX.Element[] | JSX.Element | undefined)[]
-		| JSX.Element
-		| undefined;
+	| (JSX.Element[] | JSX.Element | undefined)[]
+	| JSX.Element
+	| undefined;
 }
 
 function FormItem(props: ElementWithChildren) {
@@ -48,8 +49,10 @@ function FormItem(props: ElementWithChildren) {
 
 const NetworkTileBlock = styled(Block)`
 	height: 102px;
+	width: 102px;
 	&:hover {
 		height: 100px;
+		width: 100px;
 		border-width: 1px;
 		border-style: solid;
 		border-color: #009df5;
@@ -57,7 +60,6 @@ const NetworkTileBlock = styled(Block)`
 `;
 
 function NetwoorkIcon(props: { type: string }) {
-	console.log(props.type);
 	switch (props.type) {
 		case 'ethereum':
 			return <Eth />;
@@ -71,49 +73,53 @@ function NetwoorkIcon(props: { type: string }) {
 function NetworkItem() {
 	const server = useServerApi();
 	const form = useFormContext();
-
 	return (
 		<FormItem>
-			<Heading size="sm">Netwrork</Heading>
+			<Heading size="sm">Network</Heading>
 			<HStack align="flex-start" justify="center" spacing="xl" wrap="wrap">
 				{server.status.status === Status.Success
 					? server.wallets.map(w => {
-							const isActive =
-								form.content.network && form.content.network.id === w.id;
-							const denom = w.denoms[0];
-							const balance = server.limits[0][w.id][w.denoms[0]];
-							const limitCutLen = 5;
-
-							return (
-								<StackItem key={w.name} basis="220px">
-									<NetworkTileBlock
-										onClick={() => form.setNetwork(w)}
-										color={isActive ? 'foreground' : 'accent'}
-									>
-										<VStack justify="center" align="center" spacing="sm">
-											<StackItem>
-												<NetwoorkIcon type={w.type} />
-											</StackItem>
-											<StackItem>
-												<Text size="sm">{w.name}</Text>
-											</StackItem>
-											<StackItem>
-												<Text size="sm" title={balance}>
-													{`${denom}: ${
-														balance.length > limitCutLen
-															? balance.substr(0, limitCutLen) + '..'
-															: balance
+						const isActive =
+							form.content.network && form.content.network.id === w.id;
+						const denom = w.denoms[0];
+						const balance = server.limits[0][w.id][w.denoms[0]];
+						const limitCutLen = 5;
+						return (
+							<StackItem key={w.name}>
+								<NetworkTileBlock
+									onClick={() => form.setNetwork(w)}
+									color={isActive ? 'foreground' : 'accent'}
+								>
+									<VStack justify="center" align="center" spacing="sm">
+										<StackItem>
+											<NetwoorkIcon type={w.type} />
+										</StackItem>
+										<StackItem>
+											<Text size="sm">{w.name}</Text>
+										</StackItem>
+										<StackItem>
+											<Text size="sm" title={balance}>
+												{`${denom}: ${balance.length > limitCutLen
+														? balance.substr(0, limitCutLen) + '..'
+														: balance
 													}`}
-												</Text>
-											</StackItem>
-										</VStack>
-									</NetworkTileBlock>
-								</StackItem>
-							);
-					  })
+											</Text>
+										</StackItem>
+									</VStack>
+								</NetworkTileBlock>
+							</StackItem>
+						);
+					})
 					: undefined}
 				{server.status.status != Status.Success ? (
-					<StatusIcon status={server.status.status} />
+					<VStack justify="center" align="center" >
+						<StackItem>
+							<StatusIcon status={server.status.status} />
+						</StackItem>
+						<StackItem>
+							<Text>{server.status.message}</Text>
+						</StackItem>
+					</VStack>
 				) : undefined}
 			</HStack>
 		</FormItem>
@@ -123,9 +129,6 @@ function NetworkItem() {
 function AmountItem() {
 	const form = useFormContext();
 	const server = useServerApi();
-	const step = form.content.network
-		? server.limits[0][form.content.network.id][form.content.network.denoms[0]]
-		: 0;
 	const iterate = ['1', '3', '5', '15'];
 
 	return (
@@ -135,7 +138,7 @@ function AmountItem() {
 			{form.content.network ? (
 				<HStack justify="space-between">
 					{iterate.map(v => (
-						<StackItem key={v} basis="20%">
+						<StackItem key={v} basis="23%">
 							<Button fullwidth onClick={() => form.setAmount(v)}>
 								{`${v} ${form.content.network?.denoms[0]}`}
 							</Button>
@@ -172,6 +175,8 @@ function WalletItem() {
 
 function SubmitButtonItem() {
 	const form = useFormContext();
+	const globalContext = useGlobalContext();
+
 	return (
 		<FormItem>
 			<Button
@@ -187,6 +192,7 @@ function SubmitButtonItem() {
 					};
 					ServerApi.postRequest(network.id, request)
 						.then(w => {
+							globalContext.incIteracion();
 							form.setModal({ status: Status.Success, message: w });
 						})
 						.catch(e =>
@@ -212,7 +218,7 @@ function ModalState() {
 	const status = form.content.ststus;
 
 	return (
-		<>
+		<div>
 			<Modal
 				open={status && status?.status === Status.Error}
 				center
@@ -244,7 +250,7 @@ function ModalState() {
 					OK
 				</Button>
 			</Modal>
-		</>
+		</div>
 	);
 }
 
@@ -257,7 +263,7 @@ export default function Form() {
 				align="stretch"
 				spacing="xxl"
 				style={{
-					maxWidth: '700px',
+					maxWidth: '800px',
 					margin: '0 auto',
 				}}
 			>

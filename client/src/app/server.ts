@@ -29,12 +29,12 @@ export class ServerApi {
 	}
 
 	static getWallets(): Promise<Wallet[]> {
-		return fetch('api/wallets/').then(x =>
+		return fetch('/api/wallets/').then(x =>
 			x.ok ? x.json() : x.text().then(x => Promise.reject(x))
 		);
 	}
 	static getLimits(): Promise<Limit[]> {
-		return fetch('api/limits/').then(x =>
+		return fetch('/api/limits/').then(x =>
 			x.ok ? x.json() : x.text().then(x => Promise.reject(x))
 		);
 	}

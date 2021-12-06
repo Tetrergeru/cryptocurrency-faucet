@@ -11,7 +11,7 @@ import User from './User';
 
 type setUserCallback = (user: User) => void;
 
-export default function SignIn(props: { setUser: setUserCallback }) {
+export default function SignIn() {
 	return (
 		<VStack align="center" justify="center" style={{ minHeight: '100%' }}>
 			<Block
@@ -35,16 +35,15 @@ export default function SignIn(props: { setUser: setUserCallback }) {
 						justifyContent: 'center',
 					}}
 				>
-					<Button
-						style={{
-							backgroundColor: 'white',
-						}}
-						onClick={() => {
-							setTimeout(() => props.setUser(new User()), 500);
-						}}
-					>
-						<img src="GitHub-Mark-120px-plus.png"></img>
-					</Button>
+					<a href="/api/auth/github">
+						<Button
+							style={{
+								backgroundColor: 'white',
+							}}
+						>
+							<img src="GitHub-Mark-120px-plus.png"></img>
+						</Button>
+					</a>
 				</Container>
 			</Block>
 		</VStack>

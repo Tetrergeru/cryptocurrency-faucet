@@ -1,30 +1,54 @@
 import {
+	Button,
 	Container,
 	Heading,
 	HStack,
 	Ldo,
+	StackItem,
 	Text,
 	VStack,
 } from '@lidofinance/lido-ui';
+import styled from 'styled-components';
 import User from '../User';
+import { useUserApi } from './serverContext';
+import { Status } from './statusMessage';
 
 function Logo() {
 	return <Heading>Crypto loot</Heading>;
 }
 
+const Image = styled.img`
+	width: 32px;
+	height: 32px;
+	border-radius: 16px;
+`
+
+const SignOutText = styled(Text)`
+	&:hover {
+		color: #AAAAAA
+	}
+`;
+
 function Username() {
+	const user = useUserApi();
 	return (
-		<HStack>
-			<Text size="md" style={{ padding: '10px' }}>
-				Sign out
-			</Text>
-			<Ldo />
+		<HStack align="center" justify="center">
+			<StackItem>
+				<SignOutText
+					size="md"
+					style={{ padding: '10px' }}>
+					Sign out
+				</SignOutText>
+			</StackItem>
+			<StackItem>
+				{ user.status.status === Status.Success ?
+					<Image src={user.data.avatarUrl}/> : <Ldo />}
+			</StackItem>
 		</HStack>
 	);
 }
 
-export default function Header(props: { user: User }) {
-	const { user } = props;
+export default function Header() {
 	return (
 		<VStack as="header" align="center">
 			<HStack
