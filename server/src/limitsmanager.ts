@@ -1,5 +1,5 @@
 import { Coin } from '@terra-money/terra.js';
-import { Wallet } from './wallets/wallet';
+import { Faucet } from './wallets/wallet';
 
 function getOrPutDefault<K extends string | number, V>(
 	from: Record<K, V>,
@@ -12,7 +12,7 @@ function getOrPutDefault<K extends string | number, V>(
 
 export class LimitsManager {
 	constructor(
-		private readonly wallets: Wallet[],
+		private readonly wallets: Faucet[],
 		public readonly defaultLimits: Record<string, Coin> = {}
 	) {}
 	private readonly limits = {} as Record<

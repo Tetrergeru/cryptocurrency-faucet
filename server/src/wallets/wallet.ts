@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-vars */
 import { Coin, Coins, Denom } from '@terra-money/terra.js';
 
-export interface Wallet {
+export interface Faucet {
 	// Wallet name
 	readonly name: string;
 	// Name of testnet

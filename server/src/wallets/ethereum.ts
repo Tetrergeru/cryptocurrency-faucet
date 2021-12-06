@@ -1,7 +1,7 @@
 import { Coin, Coins } from '@terra-money/terra.js';
 import Web3 from 'web3';
 import { Unit } from 'web3-utils/types';
-import { TransferReport, Wallet } from './wallet';
+import { TransferReport, Faucet } from './wallet';
 
 export interface EthereumSettings {
 	provider: string;
@@ -13,7 +13,7 @@ function convert(value: string, from: Unit, to: Unit): string {
 	return Web3.utils.fromWei(Web3.utils.toWei(value, from), to);
 }
 
-export default class EthereumWallet implements Wallet {
+export default class EthereumWallet implements Faucet {
 	readonly net = 'goerly';
 	readonly type = 'ethereum';
 	denoms: Unit[] = ['ether', 'kwei'];

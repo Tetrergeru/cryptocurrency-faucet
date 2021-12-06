@@ -1,11 +1,11 @@
 import { Coin, Coins, Dec } from '@terra-money/terra.js';
-import { TransferReport, Wallet } from './wallet';
+import { TransferReport, Faucet } from './wallet';
 
 function timer(time: number): Promise<undefined> {
 	return new Promise(resolve => setTimeout(resolve, time));
 }
 
-abstract class InMemoryWallet implements Wallet {
+abstract class InMemoryWallet implements Faucet {
 	readonly net = 'InMemory';
 	readonly type = 'mock';
 	protected chips: Dec;
@@ -34,8 +34,8 @@ export class SimpleWallet extends InMemoryWallet {
 	}
 }
 
-export class SlowlyWallet implements Wallet {
-	constructor(private readonly origin: Wallet, readonly delay: number) {}
+export class SlowlyWallet implements Faucet {
+	constructor(private readonly origin: Faucet, readonly delay: number) {}
 	get denoms() {
 		return this.origin.denoms;
 	}
