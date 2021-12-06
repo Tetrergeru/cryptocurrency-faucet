@@ -1,12 +1,13 @@
 import React, { useContext } from 'react';
 
-
 const defaultGlobalContent: {
-	loginned: boolean,
-	iteration: number,
+	loginned: boolean;
+	iteration: number;
+	theme: 'light' | 'dark';
 } = {
 	loginned: true,
 	iteration: 0,
+	theme: 'dark',
 };
 
 type contentType = typeof defaultGlobalContent;
@@ -24,9 +25,15 @@ class GlobalState {
 	incIteracion() {
 		this.update({ ...this.content, iteration: this.content.iteration + 1 });
 	}
+
+	setTheme(theme: typeof defaultGlobalContent.theme) {
+		this.update({ ...this.content, theme });
+	}
 }
 
-const GlobalStateContext = React.createContext<GlobalState | undefined>(undefined);
+const GlobalStateContext = React.createContext<GlobalState | undefined>(
+	undefined
+);
 
 interface ElementWithChildren {
 	children: JSX.Element[] | JSX.Element | undefined;

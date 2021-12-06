@@ -58,23 +58,22 @@ function getStatus<T>(
 }
 
 function getUserData(): Promise<any> {
-	return fetch("/api/users/me").then(x =>
+	return fetch('/api/users/me').then(x =>
 		x.ok ? x.json() : x.text().then(x => Promise.reject(x))
-	)
+	);
 }
 
 export function useUserApi() {
 	const queryUser = useQuery('Avatar query', getUserData);
-	const status = getStatus(queryUser, 'user')
+	const status = getStatus(queryUser, 'user');
 	const globalContext = useGlobalContext();
 
-	if (status.status === Status.Error)
-		globalContext.setLigin(false);
+	if (status.status === Status.Error) globalContext.setLigin(false);
 
 	return {
 		data: queryUser.data || {},
-		status: status
-	}
+		status: status,
+	};
 }
 
 export function useServerApi(): ServerApiType {
@@ -84,14 +83,21 @@ export function useServerApi(): ServerApiType {
 		status: { status: Status.Error, message: '' },
 	};
 	const globalState = useGlobalContext();
-	const queryWallets = useQuery('Wallets query' + globalState.content.iteration, ServerApi.getWallets)
+	const queryWallets = useQuery(
+		'Wallets query' + globalState.content.iteration,
+		ServerApi.getWallets
+	);
 
 	result.wallets = queryWallets.data || [];
 	result.status = getStatus(queryWallets, 'wallets');
 
-	const queryLimits = useQuery('Limits query'+ globalState.content.iteration, ServerApi.getLimits, {
-		enabled: result.status.status === Status.Success,
-	});
+	const queryLimits = useQuery(
+		'Limits query' + globalState.content.iteration,
+		ServerApi.getLimits,
+		{
+			enabled: result.status.status === Status.Success,
+		}
+	);
 
 	result.limits = queryLimits.data || [];
 	if (result.status.status === Status.Success)

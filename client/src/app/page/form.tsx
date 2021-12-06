@@ -24,9 +24,9 @@ import { Status, StatusIcon } from './statusMessage';
 
 interface ElementWithChildren {
 	children:
-	| (JSX.Element[] | JSX.Element | undefined)[]
-	| JSX.Element
-	| undefined;
+		| (JSX.Element[] | JSX.Element | undefined)[]
+		| JSX.Element
+		| undefined;
 }
 
 function FormItem(props: ElementWithChildren) {
@@ -78,40 +78,41 @@ function NetworkItem() {
 			<HStack align="flex-start" justify="center" spacing="xl" wrap="wrap">
 				{server.status.status === Status.Success
 					? server.wallets.map(w => {
-						const isActive =
-							form.content.network && form.content.network.id === w.id;
-						const denom = w.denoms[0];
-						const balance = server.limits[0][w.id][w.denoms[0]];
-						const limitCutLen = 5;
-						return (
-							<StackItem key={w.name}>
-								<NetworkTileBlock
-									onClick={() => form.setNetwork(w)}
-									color={isActive ? 'foreground' : 'accent'}
-								>
-									<VStack justify="center" align="center" spacing="sm">
-										<StackItem>
-											<NetwoorkIcon type={w.type} />
-										</StackItem>
-										<StackItem>
-											<Text size="sm">{w.name}</Text>
-										</StackItem>
-										<StackItem>
-											<Text size="sm" title={balance}>
-												{`${denom}: ${balance.length > limitCutLen
-														? balance.substr(0, limitCutLen) + '..'
-														: balance
+							const isActive =
+								form.content.network && form.content.network.id === w.id;
+							const denom = w.denoms[0];
+							const balance = server.limits[0][w.id][w.denoms[0]];
+							const limitCutLen = 5;
+							return (
+								<StackItem key={w.name}>
+									<NetworkTileBlock
+										onClick={() => form.setNetwork(w)}
+										color={isActive ? 'foreground' : 'accent'}
+									>
+										<VStack justify="center" align="center" spacing="sm">
+											<StackItem>
+												<NetwoorkIcon type={w.type} />
+											</StackItem>
+											<StackItem>
+												<Text size="sm">{w.name}</Text>
+											</StackItem>
+											<StackItem>
+												<Text size="sm" title={balance}>
+													{`${denom}: ${
+														balance.length > limitCutLen
+															? balance.substr(0, limitCutLen) + '..'
+															: balance
 													}`}
-											</Text>
-										</StackItem>
-									</VStack>
-								</NetworkTileBlock>
-							</StackItem>
-						);
-					})
+												</Text>
+											</StackItem>
+										</VStack>
+									</NetworkTileBlock>
+								</StackItem>
+							);
+					  })
 					: undefined}
 				{server.status.status != Status.Success ? (
-					<VStack justify="center" align="center" >
+					<VStack justify="center" align="center">
 						<StackItem>
 							<StatusIcon status={server.status.status} />
 						</StackItem>
