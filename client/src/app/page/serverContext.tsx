@@ -1,14 +1,11 @@
-import React, { useContext, useEffect } from 'react';
 import {
 	QueryClient,
 	QueryClientProvider,
 	useQuery,
 	UseQueryResult,
 } from 'react-query';
-import { Limit, ServerApi, TransferRequest, Wallet } from '../server';
+import { Limit, ServerApi, Wallet } from '../server';
 import { Status, statusMessage } from './statusMessage';
-import { ReactQueryDevtools } from 'react-query/devtools';
-import { stat } from 'fs';
 import { useGlobalContext } from '../globalContext';
 
 interface ElementWithChildren {

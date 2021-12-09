@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
+import { Wallet } from './app/server';
 
 function log<T>(w: T): T {
 	console.log(w);
@@ -44,7 +45,7 @@ function AppBackendDebug() {
 				{!wallets ? (
 					<div />
 				) : (
-					(JSON.parse(wallets) as any[]).map(x => (
+					(JSON.parse(wallets) as Wallet[]).map(x => (
 						<article key={x.name} style={{ display: 'flex', width: '600px' }}>
 							<header style={{ flex: '2' }}>{x.name}</header>
 							<section style={{ margin: '0px 10px', flex: '1' }}>

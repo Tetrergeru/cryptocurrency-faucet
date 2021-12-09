@@ -1,5 +1,3 @@
-import React from 'react';
-
 import {
 	Button,
 	Block,
@@ -7,9 +5,6 @@ import {
 	VStack,
 	Heading,
 } from '@lidofinance/lido-ui';
-import User from './User';
-
-type setUserCallback = (user: User) => void;
 
 export default function SignIn() {
 	return (

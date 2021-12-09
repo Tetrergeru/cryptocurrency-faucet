@@ -1,6 +1,4 @@
 import {
-	Button,
-	Container,
 	Dark,
 	Heading,
 	HStack,
@@ -10,9 +8,8 @@ import {
 	Text,
 	VStack,
 } from '@lidofinance/lido-ui';
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 import { useGlobalContext } from '../globalContext';
-import User from '../User';
 import { useUserApi } from './serverContext';
 import { Status } from './statusMessage';
 

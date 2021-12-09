@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Wallet } from '../server';
 import { statusMessage } from './statusMessage';
 

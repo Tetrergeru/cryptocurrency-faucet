@@ -1,13 +1,6 @@
 import React from 'react';
-import {
-	ThemeProvider,
-	themeLight,
-	themeDark,
-	Container,
-	Block,
-} from '@lidofinance/lido-ui';
+import { ThemeProvider, themeDark, Block } from '@lidofinance/lido-ui';
 import SignIn from './SignIn';
-import User from './User';
 import Page from './page/page';
 import { useGlobalContext } from './globalContext';
 import styled from 'styled-components';

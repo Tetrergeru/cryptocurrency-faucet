@@ -7,14 +7,13 @@ import {
 	VStack,
 	Block,
 	Heading,
-	Container,
 	Modal,
 	Terra,
 	Eth,
 	Ldo,
+	Link,
+	Tooltip,
 } from '@lidofinance/lido-ui';
-import { stat } from 'fs';
-import React, { useContext } from 'react';
 import styled from 'styled-components';
 import { useGlobalContext } from '../globalContext';
 import { ServerApi, TransferRequest } from '../server';
@@ -97,13 +96,15 @@ function NetworkItem() {
 												<Text size="sm">{w.name}</Text>
 											</StackItem>
 											<StackItem>
-												<Text size="sm" title={balance}>
-													{`${denom}: ${
-														balance.length > limitCutLen
-															? balance.substr(0, limitCutLen) + '..'
-															: balance
-													}`}
-												</Text>
+												<Tooltip title={balance}>
+													<Text size="sm">
+														{`${denom}: ${
+															balance.length > limitCutLen
+																? balance.substr(0, limitCutLen) + '..'
+																: balance
+														}`}
+													</Text>
+												</Tooltip>
 											</StackItem>
 										</VStack>
 									</NetworkTileBlock>
@@ -193,7 +194,10 @@ function SubmitButtonItem() {
 					ServerApi.postRequest(network.id, request)
 						.then(w => {
 							globalContext.incIteracion();
-							form.setModal({ status: Status.Success, message: w });
+							form.setModal({
+								status: Status.Success,
+								message: w,
+							});
 						})
 						.catch(e =>
 							form.setModal({
@@ -245,7 +249,17 @@ function ModalState() {
 				title="Success"
 				titleIcon={<StatusIcon status={Status.Success} />}
 			>
-				<Text>{form.content.ststus?.message}</Text>
+			{/* <Text>{form.content.ststus?.message}</Text> */}
+				{(() => {
+						if (!form.content.ststus || form.content.ststus.status !== Status.Success) return undefined;
+						console.log(form.content.ststus.message);
+						const json = JSON.parse(form.content.ststus.message);
+						return <>
+							<Text>{json.message}<br/>
+							<Link href={json.transactionURL}>{json.transactionURL}</Link>
+							</Text>
+						</>
+					})()}
 				<Button color="secondary" onClick={() => form.setModal(undefined)}>
 					OK
 				</Button>
