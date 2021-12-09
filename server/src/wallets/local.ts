@@ -28,7 +28,7 @@ export class SimpleWallet extends InMemoryWallet {
 	move(to: string, coin: Coin): Promise<TransferReport> {
 		if (coin.amount.lessThanOrEqualTo(this.chips)) {
 			this.chips = this.chips.sub(coin.amount);
-			return Promise.resolve({ message: `transfered ${coin} to ${to}` });
+			return Promise.resolve({ message: `Transfered ${coin} to ${to}`, transactionURL: 'https://example.com' });
 		}
 		return Promise.reject(new Error('Not enough tokens on wallet'));
 	}

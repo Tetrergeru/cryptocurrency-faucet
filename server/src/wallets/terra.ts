@@ -15,25 +15,23 @@ import { Faucet, TransferReport, WalletUtils } from './wallet';
 export interface TerraFaucetSettings {
 	gasType?: string;
 	gasAmount?: Numeric.Input;
-	mnemonicKey?: string;
-	privateKey?: string;
+	mnemonicKey: string;
 }
 
 const uMultiplyer = 1000000;
 export default class TerraFaucet implements Faucet {
 	readonly net = 'bombay-12';
 	readonly type = 'terra';
-	balance: Coins = new Coins([new Coin('luna', 0)]);
-	denoms: readonly string[] = ['luna']; // , "usd"]; needs confriming
+	balance: Coins = new Coins([new Coin('usd', 0)]);
+	denoms: readonly string[] = ['usd'];
 
 	private readonly terra: LCDClient;
 	private readonly wallet: Wallet;
-	constructor(readonly name: string, settings: TerraFaucetSettings = {}) {
+	constructor(readonly name: string, settings: TerraFaucetSettings) {
 		const {
 			gasType = 'luna',
 			gasAmount = '0.0001',
-			mnemonicKey,
-			privateKey,
+			mnemonicKey
 		} = settings;
 		const gasPrices = new Coins([
 			new Coin(`u${gasType}`, new Dec(uMultiplyer).mul(gasAmount)),
@@ -44,26 +42,22 @@ export default class TerraFaucet implements Faucet {
 			chainID: this.net,
 			gasPrices,
 		});
-		if (privateKey == undefined && mnemonicKey == undefined) {
+		if (mnemonicKey == undefined) {
 			throw new Error(
-				`can't initialize terra faucet: not found private or mnemonic key`
+				`can't initialize terra faucet: not found mnemonic key`
 			);
 		}
-		this.wallet = this.terra.wallet(
-			privateKey
-				? new RawKey(Buffer.from(privateKey, 'utf-8'))
-				: new MnemonicKey({ mnemonic: mnemonicKey })
-		);
+		this.wallet = this.terra.wallet(new MnemonicKey({ mnemonic: mnemonicKey }));
 
 		this.terra.bank
 			.balance(this.wallet.key.accAddress)
 			.then(
 				([coins]) =>
-					(this.balance = new Coins(
-						coins.map(
-							c => new Coin(c.denom.substr(1), c.amount.div(uMultiplyer))
-						)
-					))
+				(this.balance = new Coins(
+					coins.map(
+						c => new Coin(c.denom.substr(1), c.amount.div(uMultiplyer))
+					)
+				))
 			)
 			.catch(console.error);
 	}
@@ -81,9 +75,12 @@ export default class TerraFaucet implements Faucet {
 
 		try {
 			const tx = await this.wallet.createAndSignTx({ msgs: [my_tx] });
-			const res = await this.terra.tx.broadcast(tx);
-			console.debug(res);
-			return { message: `Succesfully transfered: ${res.info}` };
+			const transaction = await this.terra.tx.broadcast(tx);
+			console.debug(transaction);
+			return {
+				message: `Succesfully transfered: ${transaction.info}`,
+				transactionURL: `https://finder.terra.money/${this.net}/tx/${transaction.txhash}`,
+			};
 		} catch (err: any) {
 			if (err.response) {
 				console.error(err.response.data);

@@ -29,8 +29,12 @@ export default class EthereumWallet implements Faucet {
 		this.privateKey = privateKey;
 		this.address = address;
 		// TODO: maybe contructor should be call after checking balance?
+		this.updateBalance();
+	}
+
+	private updateBalance() {
 		this.web3.eth
-			.getBalance(address)
+			.getBalance(this.address)
 			.then(wei => {
 				this.balance = new Coins(
 					this.denoms.map(unit => new Coin(unit, Web3.utils.fromWei(wei, unit)))
@@ -42,7 +46,7 @@ export default class EthereumWallet implements Faucet {
 	async move(addrTo: string, coin: Coin): Promise<TransferReport> {
 		const val = Web3.utils.toWei(coin.amount.toString(), coin.denom as Unit);
 		const trans = await this.web3.eth.accounts.signTransaction(
-			{ to: addrTo, value: val, gas: 2000000 },
+			{ to: addrTo, value: val, gas: 21000 },
 			this.privateKey
 		);
 		if (trans.rawTransaction === undefined) {
@@ -51,8 +55,10 @@ export default class EthereumWallet implements Faucet {
 		const transaction = await this.web3.eth.sendSignedTransaction(
 			trans.rawTransaction
 		);
+		this.updateBalance();
 		return {
 			message: `transaction status ${transaction.status} for transfer ${coin} to ${addrTo}`,
+			transactionURL: `https://goerli.etherscan.io/tx/${transaction.transactionHash}`,
 		};
 	}
 

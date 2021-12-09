@@ -59,7 +59,7 @@ const Limits = new LimitsManager(Wallets, {
 		])
 	),
 	Goerli: new Coin('ether', config.wallets.goerli.limit),
-	'Bombay-12': new Coin('luna', config.wallets.bombay.limit),
+	'Bombay-12': new Coin('usd', config.wallets.bombay.limit),
 });
 
 const usersRouter = Router();

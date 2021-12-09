@@ -22,4 +22,5 @@ export interface WalletUtils {
 // TODO: think about info and fields
 export interface TransferReport {
 	readonly message: string;
+	readonly transactionURL?: string;
 }

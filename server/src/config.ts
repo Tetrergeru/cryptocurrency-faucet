@@ -14,12 +14,11 @@ const defaultConfig = {
 			provider: '',
 			address: '',
 			privateKey: '',
-			limit: "0.001",
+			limit: '0.1',
 		},
 		bombay: {
-			limit: 1,
+			limit: '1',
 			mnemonicKey: '',
-			privateKey: '',
 		} as TerraFaucetSettings & { limit: Numeric.Input },
 	},
 	auth: {
@@ -29,9 +28,8 @@ const defaultConfig = {
 		github: {
 			clientID: '',
 			clientSecret: '',
-			callbackURL: '',
 			organization: '',
-			admin: '',
+			callbackURL: '',
 		},
 	},
 	database: {
