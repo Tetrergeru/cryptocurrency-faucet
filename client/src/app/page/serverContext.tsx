@@ -6,7 +6,7 @@ import {
 } from 'react-query';
 import { Limit, ServerApi, Wallet } from '../server';
 import { Status, statusMessage } from './statusMessage';
-import { useGlobalContext } from '../globalContext';
+import { LoginStatus, useGlobalContext } from '../globalContext';
 
 interface ElementWithChildren {
 	children: JSX.Element[] | JSX.Element | undefined;
@@ -46,7 +46,7 @@ function getStatus<T>(
 	if (query.isError)
 		return {
 			status: Status.Error,
-			message: query.error,
+			message: JSON.parse(query.error).message,
 		};
 	return {
 		status: Status.Error,
@@ -60,12 +60,32 @@ function getUserData(): Promise<any> {
 	);
 }
 
-export function useUserApi() {
-	const queryUser = useQuery('Avatar query', getUserData);
-	const status = getStatus(queryUser, 'user');
+export function udateUserApi(): statusMessage {
 	const globalContext = useGlobalContext();
+	if (globalContext.content.loginned != LoginStatus.Undefined)
+		return {
+			status: Status.Error,
+			message:
+				'Login status is defined, use globalContext.setLigin(LoginStatus.Undefined) to request status',
+		};
 
-	if (status.status === Status.Error) globalContext.setLigin(false);
+	const queryUser = useQuery('Avatar query', getUserData, { retry: false });
+	const status = getStatus(queryUser, 'user');
+
+	if (status.status === Status.Error)
+		globalContext.setLigin(LoginStatus.Logouted);
+	if (status.status === Status.Success)
+		globalContext.setLigin(LoginStatus.Loginned);
+	return status;
+}
+
+export function useUserApi() {
+	const globalContext = useGlobalContext();
+	if (globalContext.content.loginned == LoginStatus.Undefined)
+		throw new Error('using useUserApi in Undefined global login status');
+
+	const queryUser = useQuery('Avatar query', getUserData, { retry: false });
+	const status = getStatus(queryUser, 'user');
 
 	return {
 		data: queryUser.data || {},

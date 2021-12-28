@@ -6,18 +6,16 @@ import { ServerProvider } from './serverContext';
 
 export default function Page() {
 	return (
-		<ServerProvider>
-			<Container
-				size="full"
-				style={{
-					maxWidth: '100%',
-					height: '100%',
-				}}
-			>
-				<Header></Header>
-				<Content></Content>
-				<Footer></Footer>
-			</Container>
-		</ServerProvider>
+		<Container
+			size="full"
+			style={{
+				maxWidth: '100%',
+				height: '100%',
+			}}
+		>
+			<Header></Header>
+			<Content></Content>
+			<Footer></Footer>
+		</Container>
 	);
 }

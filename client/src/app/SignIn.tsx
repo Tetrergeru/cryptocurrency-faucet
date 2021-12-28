@@ -4,9 +4,14 @@ import {
 	Container,
 	VStack,
 	Heading,
+	Text,
 } from '@lidofinance/lido-ui';
+import { useUserApi } from './page/serverContext';
 
 export default function SignIn() {
+	const user = useUserApi();
+	const status = user.status.message;
+
 	return (
 		<VStack align="center" justify="center" style={{ minHeight: '100%' }}>
 			<Block
@@ -40,6 +45,7 @@ export default function SignIn() {
 						</Button>
 					</a>
 				</Container>
+				{status ? <Text>{status} </Text> : undefined}
 			</Block>
 		</VStack>
 	);

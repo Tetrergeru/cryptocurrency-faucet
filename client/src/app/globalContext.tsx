@@ -1,11 +1,17 @@
 import React from 'react';
 
+export enum LoginStatus {
+	Loginned,
+	Logouted,
+	Undefined,
+}
+
 const defaultGlobalContent: {
-	loginned: boolean;
+	loginned: LoginStatus;
 	iteration: number;
 	theme: 'light' | 'dark';
 } = {
-	loginned: true,
+	loginned: LoginStatus.Undefined,
 	iteration: 0,
 	theme: 'dark',
 };
@@ -18,11 +24,12 @@ class GlobalState {
 		readonly content: contentType
 	) {}
 
-	setLigin(loginned: boolean) {
+	setLigin(loginned: LoginStatus) {
 		this.update({ ...this.content, loginned });
 	}
 
 	incIteracion() {
+		console.log(this.content.iteration);
 		this.update({ ...this.content, iteration: this.content.iteration + 1 });
 	}
 
