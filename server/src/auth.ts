@@ -73,13 +73,13 @@ export function authCheckMiddleware(req: any, res: Response, next: any) {
 			.status(401)
 			.json({ message: 'Login with github and enable cookies.' });
 	if (
-		!(req.user as User)?.organizations.includes(config.auth.github.organization)
+		!config.auth.github.organizations.some(org => (req.user as User)?.organizations.includes(org))
 	) {
 		return res
 			.status(403)
 			.json({
 				message:
-					'You should be in the GitHub organization. If you has been added, try logout and login again.',
+					`You should be in the GitHub organization (${config.auth.github.organizations.join(",")}). If you has been added, try logout and login again.`,
 			});
 	}
 	next();

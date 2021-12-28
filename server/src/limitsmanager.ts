@@ -1,20 +1,29 @@
 import { Coin } from '@terra-money/terra.js';
 import { Faucet } from './wallets/wallet';
 
+function isNonNullable<T>(x: T): x is NonNullable<T> {
+	if (x === undefined || x === null)
+		return false;
+	return true;
+}
+
 function getOrPutDefault<K extends string | number, V>(
 	from: Record<K, V>,
 	key: K,
 	defaultValue: NonNullable<V>
 ): NonNullable<V> {
-	if (from[key] === undefined) return (from[key] = defaultValue);
-	return from[key]!;
+	const actualValue = from[key];
+	if (isNonNullable(actualValue)) return actualValue;
+	return from[key] = defaultValue;
 }
 
 export class LimitsManager {
 	constructor(
+		// eslint-disable-next-line no-unused-vars
 		private readonly wallets: Faucet[],
+		// eslint-disable-next-line no-unused-vars
 		public readonly defaultLimits: Record<string, Coin> = {}
-	) {}
+	) { }
 	private readonly limits = {} as Record<
 		string,
 		Record<string, Coin | undefined> | undefined
@@ -26,7 +35,10 @@ export class LimitsManager {
 			walletId,
 			this.defaultLimits[walletId]
 		);
-		const wallet = this.wallets.find(w => w.name === walletId)!;
+		const wallet = this.wallets.find(w => w.name === walletId);
+		if (wallet === undefined) {
+			throw new Error("Wallet");
+		}
 		const decrease = wallet.utils.convert(wanted, walletLimit.denom);
 		if (decrease.amount.greaterThan(walletLimit.amount))
 			throw new Error(`Limit overflow`);
