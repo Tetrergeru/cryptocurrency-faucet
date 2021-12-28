@@ -256,7 +256,7 @@ function ModalState() {
 						const json = JSON.parse(form.content.ststus.message);
 						return <>
 							<Text>{json.message}<br/>
-							<Link href={json.transactionURL}>{json.transactionURL}</Link>
+							<Link href={json.transactionURL}>transaction</Link>
 							</Text>
 						</>
 					})()}
