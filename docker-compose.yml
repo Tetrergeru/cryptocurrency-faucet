@@ -1,0 +1,41 @@
+version: '3'
+services:
+  mongodb:
+    image: 'mongo:4.2.1'
+    container_name: 'mongodb'
+    hostname: 'mongodb'
+    environment:
+      MONGO_INITDB_DATABASE: $MONGO_INITDB_DATABASE
+      MONGO_INITDB_ROOT_USERNAME: $MONGO_INITDB_ROOT_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $MONGO_INITDB_ROOT_PASSWORD
+    volumes:
+      - ./mongo-volume:/data/db
+    ports:
+      - '27017-27019:27017-27019'
+  server:
+    image: 'ghcr.io/tetrergeru/cryptocurrency-faucet/server:latest'
+    container_name: server
+    hostname: server
+    ports:
+      - '3000:3000'
+    environment:
+      APP_API_HOST: $APP_API_HOST
+      APP_API_PORT: $APP_API_PORT
+      APP_WALLETS_GOERLI_PROVIDER: $APP_WALLETS_GOERLI_PROVIDER
+      APP_WALLETS_GOERLI_ADDRESS: $APP_WALLETS_GOERLI_ADDRESS
+      APP_WALLETS_GOERLI_PRIVATEKEY: $APP_WALLETS_GOERLI_PRIVATEKEY
+      APP_WALLETS_BOMBAY_MNEMONICKEY: $APP_WALLETS_BOMBAY_MNEMONICKEY
+      APP_WALLETS_GOERLI_LIMIT: $APP_WALLETS_GOERLI_LIMIT
+      APP_WALLETS_BOMBAY_LIMIT: $APP_WALLETS_BOMBAY_LIMIT
+      APP_DATABASE_HOST: mongodb:27017
+      APP_DATABASE_USER: $MONGO_INITDB_ROOT_USERNAME
+      APP_DATABASE_PASSWORD: $MONGO_INITDB_ROOT_PASSWORD
+      APP_AUTH_GITHUB_ORGANIZATIONS: $APP_AUTH_GITHUB_ORGANIZATIONS
+      APP_AUTH_SESSION_SECRET: $APP_AUTH_SESSION_SECRET
+      APP_AUTH_GITHUB_CLIENTID: $APP_AUTH_GITHUB_CLIENTID
+      APP_AUTH_GITHUB_CLIENTSECRET: $APP_AUTH_GITHUB_CLIENTSECRET
+  client:
+    image: 'ghcr.io/tetrergeru/cryptocurrency-faucet/client:latest'
+    container_name: client
+    ports:
+      - '80:8080'
