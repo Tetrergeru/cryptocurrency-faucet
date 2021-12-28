@@ -19,9 +19,13 @@ export default function App() {
 			theme={globalState.content.theme === 'dark' ? themeDark : myThemeLight}
 		>
 			<FullBlock color="background">
-				{globalState.content.loginned === LoginStatus.Loginned ? <Page /> :
-				globalState.content.loginned === LoginStatus.Logouted ? <SignIn /> :
-				<Loader/>}
+				{globalState.content.loginned === LoginStatus.Loginned ? (
+					<Page />
+				) : globalState.content.loginned === LoginStatus.Logouted ? (
+					<SignIn />
+				) : (
+					<Loader />
+				)}
 			</FullBlock>
 		</ThemeProvider>
 	);

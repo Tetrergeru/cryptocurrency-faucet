@@ -65,23 +65,26 @@ export function udateUserApi(): statusMessage {
 	if (globalContext.content.loginned != LoginStatus.Undefined)
 		return {
 			status: Status.Error,
-			message: 'Login status is defined, use globalContext.setLigin(LoginStatus.Undefined) to request status',
+			message:
+				'Login status is defined, use globalContext.setLigin(LoginStatus.Undefined) to request status',
 		};
 
-	const queryUser = useQuery('Avatar query', getUserData, {retry: false});
+	const queryUser = useQuery('Avatar query', getUserData, { retry: false });
 	const status = getStatus(queryUser, 'user');
 
-	if (status.status === Status.Error) globalContext.setLigin(LoginStatus.Logouted);
-	if (status.status === Status.Success) globalContext.setLigin(LoginStatus.Loginned);
+	if (status.status === Status.Error)
+		globalContext.setLigin(LoginStatus.Logouted);
+	if (status.status === Status.Success)
+		globalContext.setLigin(LoginStatus.Loginned);
 	return status;
 }
 
 export function useUserApi() {
 	const globalContext = useGlobalContext();
 	if (globalContext.content.loginned == LoginStatus.Undefined)
-		throw new Error("using useUserApi in Undefined global login status");
+		throw new Error('using useUserApi in Undefined global login status');
 
-	const queryUser = useQuery('Avatar query', getUserData, {retry: false});
+	const queryUser = useQuery('Avatar query', getUserData, { retry: false });
 	const status = getStatus(queryUser, 'user');
 
 	return {

@@ -249,17 +249,25 @@ function ModalState() {
 				title="Success"
 				titleIcon={<StatusIcon status={Status.Success} />}
 			>
-			{/* <Text>{form.content.ststus?.message}</Text> */}
+				{/* <Text>{form.content.ststus?.message}</Text> */}
 				{(() => {
-						if (!form.content.ststus || form.content.ststus.status !== Status.Success) return undefined;
-						console.log(form.content.ststus.message);
-						const json = JSON.parse(form.content.ststus.message);
-						return <>
-							<Text>{json.message}<br/>
-							<Link href={json.transactionURL}>transaction</Link>
+					if (
+						!form.content.ststus ||
+						form.content.ststus.status !== Status.Success
+					)
+						return undefined;
+					console.log(form.content.ststus.message);
+					const json = JSON.parse(form.content.ststus.message);
+					return (
+						<>
+							<Text>
+								{json.message}
+								<br />
+								<Link href={json.transactionURL}>transaction</Link>
 							</Text>
 						</>
-					})()}
+					);
+				})()}
 				<Button color="secondary" onClick={() => form.setModal(undefined)}>
 					OK
 				</Button>

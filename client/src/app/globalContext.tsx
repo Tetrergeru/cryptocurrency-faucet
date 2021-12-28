@@ -29,7 +29,7 @@ class GlobalState {
 	}
 
 	incIteracion() {
-		console.log(this.content.iteration)
+		console.log(this.content.iteration);
 		this.update({ ...this.content, iteration: this.content.iteration + 1 });
 	}
 

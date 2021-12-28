@@ -4,7 +4,7 @@ import {
 	Container,
 	VStack,
 	Heading,
-	Text
+	Text,
 } from '@lidofinance/lido-ui';
 import { useUserApi } from './page/serverContext';
 
@@ -45,7 +45,7 @@ export default function SignIn() {
 						</Button>
 					</a>
 				</Container>
-					{ status ? <Text>{status} </Text> : undefined }
+				{status ? <Text>{status} </Text> : undefined}
 			</Block>
 		</VStack>
 	);
