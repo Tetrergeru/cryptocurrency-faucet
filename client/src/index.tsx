@@ -4,11 +4,14 @@ import './index.css';
 import App from './app/App';
 import reportWebVitals from './helpers/reportWebVitals';
 import { GlobalProvider } from './app/globalContext';
+import { ServerProvider } from './app/page/serverContext';
 
 ReactDOM.render(
 	<React.StrictMode>
 		<GlobalProvider>
-			<App />
+			<ServerProvider>
+				<App />
+			</ServerProvider>
 		</GlobalProvider>
 	</React.StrictMode>,
 	document.getElementById('root')
